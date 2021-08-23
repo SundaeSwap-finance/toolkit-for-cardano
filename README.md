@@ -17,8 +17,8 @@ by providing common functionality needed by teams:
 Launch the `cardano-toolkit` server which exposes a graphql endpoint, `/graphql`
 
 ```
-export TREASURY_ADDR="..."         # address of treasury wallet e.g. addr
-export TREASURY_SIGNING_KEY="..."  # path to .skey file
+export TREASURY_ADDR="..."              # address of treasury wallet e.g. addr
+export TREASURY_SIGNING_KEY_FILE="..."  # path to .skey file
 docker run -it --rm \
   -p 80:80 \
   -v /nix:/nix \
@@ -29,7 +29,7 @@ docker run -it --rm \
     --socket-path "${CARDANO_NODE_SOCKET_PATH}" \
     --testnet-magic 31415 \
     --treasury-addr "${TREASURY_ADDR}" \
-    --treasury-signing-key "${TREASURY_SIGNING_KEY}"
+    --treasury-signing-key "${TREASURY_SIGNING_KEY_FILE}"
 ```
 
 The graphql endpoint will be on port 80 at `/graphql`
@@ -60,6 +60,12 @@ Assuming go 1.16 or better is installed
 #### Dir
 
 `cardano-toolkit` stores its data in the directory passed in via `--dir` 
+
+#### Minting
+
+Minted tokens are in the namespace of the wallet that generated them.  That
+wallet can mint as many or few tokens as it wishes.  However, tokens minted by
+one wallet are not fungible with tokens minted by another wallet.
 
 #### Wallets
 
