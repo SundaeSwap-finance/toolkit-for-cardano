@@ -1,0 +1,125 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  # always returns ok
+  ok: String!
+
+  # tip -> `cardano query tip`
+  tip: Tip
+
+  # calculate the transaction fees
+  txFee(raw: String!, txIn: Int = 1, txOut: Int = 1, witnesses: Int = 1): String!
+
+  # utxos -> `cardano query utxo`
+  # address filters utxos to only those for the given wallet
+  # assetId filters utxos that contain specified token(s)
+  # when excludeScripts is true, any transaction with a script associated will be excluded
+  # when excludeTokens is true, any transaction with native tokens associated will be excluded
+  utxos(address: String, assetId: String, excludeScripts: Boolean, excludeTokens: Boolean): [Utxo!]!
+
+  # utxos -> `cardano version`
+  version: Version
+}
+
+type Mutation {
+  # mint a new token
+  mint(assetName: String!, quantity: String!, wallet: String!): Query
+
+  # Build a new transaction.  Returns a base64 encoded raw transaction
+  # datum should be base64 encoded datum
+  txBuild(fee: String = "0", txIn: [TxIn!]!, txOut: [TxOut!]!): Tx
+
+  # Sign accepts a base64 encoded raw transaction along with the wallet to sign
+  # the transaction with and returns a base64 encoded signed transaction
+  txSign(raw: String!, wallet: String!): Tx
+
+  # Submit accepts a base64 encoded signed transaction submits the transaction
+  # to the cardano node
+  txSubmit(signed: String!): Query
+
+  # Send funds from the source account to the target account.  All provided txIn
+  # will be joined together into a single utxo.  If no target account is specified,
+  # txIn will be joined together and sent to the source account.
+  sendFunds(source: String!, target: String, txIn: [TxIn!]!): Query
+
+  # Creates a new address and optionally funds it with the specified amount of ADA.
+  walletCreate(initialFunds: String): String!
+
+  # Fund the specified address with ADA.  Deposits 1,000 ADA by default (1e3 * 1e6)
+  walletFund(address: String!, quantity: String = "1000000000"): Query
+}
+
+input TxIn {
+  address: String!
+  index: Int!
+}
+
+input TxOut {
+  address: String!
+  quantity: String!
+}
+
+type Asset {
+  assetId: String!
+  assetName: String!
+  name: String
+  policyId: String!
+  ticker: String
+}
+
+type RawTx {
+  # cborHex content from tx
+  cborHex: String!
+
+  # base64 encoded raw transaction
+  raw: String!
+
+  # transaction id of setup
+  txID: String!
+
+  # datumHash associated with setup
+  datumHash: String!
+}
+
+type Tip {
+  block: Int!
+  epoch: Int!
+  era: String!
+  hash: String!
+  slot: Int!
+}
+
+type Token {
+  asset: Asset!
+  quantity: String!
+}
+
+type Tx {
+  body: String!
+  id: String!
+}
+
+type Utxo {
+  address: String!
+
+  # datumHash will be present if a script has been associated with the utxo
+  datumHash: String
+
+  index: Int!
+  tokens: [Token!]!
+  value: String!
+}
+
+type Version {
+  # git revision of cardano-node
+  git: String!
+  # git revision of cardano-cli
+  revision: String!
+  # version of testnet-graphql
+  version: String!
+  # date and time when testnet-graphql was built
+  built: String!
+}

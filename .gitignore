@@ -1,0 +1,9 @@
+# ignore intellij
+.idea
+*.iml
+*.ipr
+*.iws
+
+# ignore generated
+cardano-toolkit
+
