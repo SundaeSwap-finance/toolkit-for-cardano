@@ -1,6 +1,8 @@
 cardano-toolkit
 ------------------
 
+![](docs/screenshot.png)
+
 `cardano-toolkit` attempts to simplify development smart contracts on Cardano
 by providing common functionality needed by teams:
 
