@@ -191,7 +191,7 @@ func (c CLI) Sign(ctx context.Context, raw []byte, wallets ...string) (data []by
 		case "":
 			signingKeyFile = c.TreasurySkeyFile
 		default:
-			signingKeyFile = fmt.Sprintf("%v/%v.skey", dirWallets, wallet)
+			signingKeyFile = fmt.Sprintf("%v/%v/%v.skey", c.Dir, dirWallets, wallet)
 		}
 		args = append(args, "--signing-key-file", signingKeyFile)
 	}
@@ -263,7 +263,7 @@ func (c CLI) transferFunds(ctx context.Context, utxo Utxo, address, quantity str
 		return Tx{}, fmt.Errorf("failed to transfer funds: %w", err)
 	}
 
-	filename := fmt.Sprintf("/%v/tmp/%v", c.Dir, ksuid.New().String())
+	filename := filepath.Join(c.Dir, "tmp", ksuid.New().String())
 	defer os.Remove(filename)
 	if _ = ioutil.WriteFile(filename, raw, 0644); err != nil {
 		return Tx{}, fmt.Errorf("failed to write raw tx body: %w", err)
