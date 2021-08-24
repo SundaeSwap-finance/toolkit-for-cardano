@@ -11,3 +11,4 @@ cardano-toolkit
 .cache
 dist
 node_modules
+yarn-error.log
