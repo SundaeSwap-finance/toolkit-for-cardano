@@ -29,7 +29,7 @@ docker run -it --rm \
     --socket-path "${CARDANO_NODE_SOCKET_PATH}" \
     --testnet-magic 31415 \
     --treasury-addr "${TREASURY_ADDR}" \
-    --treasury-signing-key "${TREASURY_SIGNING_KEY_FILE}"
+    --treasury-skey-file "${TREASURY_SIGNING_KEY_FILE}"
 ```
 
 The graphql endpoint will be on port 80 at `/graphql`

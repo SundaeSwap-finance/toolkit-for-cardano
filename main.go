@@ -27,21 +27,22 @@ var built string
 var version string
 
 var opts struct {
-	Assets  string
-	Debug   bool
+	Assets  string // Assets contains optional directory for static assets
+	Debug   bool   // Debug mode for additional logging
 	Dir     string // Dir to store data in
 	Port    int    // Port to listen on
 	Cardano struct {
 		CLI              cli.StringSlice // Cardano cli invocation e.g. cardano-cli or ssh hostname cardano-cli
-		SocketPath       string
-		TestnetMagic     string
-		TreasuryAddr     string
-		TreasurySkeyFile string
+		SocketPath       string          // SocketPath holds ${CARDANO_NODE_SOCKET_PATH}
+		TestnetMagic     string          // TestnetMagic
+		TreasuryAddr     string          // TreasuryAddr is the address of the treasury wallet
+		TreasurySkeyFile string          // TreasurySkeyFile is a pointer to the skey file for the treasury wallet
 	}
 }
 
 func main() {
 	app := cli.NewApp()
+	app.Usage = "launch cardano-toolkit server"
 	app.Version = strings.TrimSpace(version)
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
@@ -98,7 +99,7 @@ func main() {
 			Destination: &opts.Cardano.TreasuryAddr,
 		},
 		&cli.StringFlag{
-			Name:        "treasury-signing-key",
+			Name:        "treasury-skey-file",
 			Usage:       "file containing treasury signing key",
 			EnvVars:     []string{"TREASURY_SIGNING_KEY_FILE"},
 			Required:    true,
