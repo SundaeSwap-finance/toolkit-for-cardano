@@ -1,4 +1,5 @@
 import toast from "react-hot-toast";
+import { toastConfig } from "./notifications/toastConfig";
 import { TUtxo } from "./types";
 
 const API_URL = "";
@@ -67,7 +68,7 @@ export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
   address: string,
   quantity: string = "1000000000"
 ): Promise<void> => {
-  toast(`Funding wallet ${Number(quantity) / 1_000_000} ADA.`);
+  toast(`Funding wallet ${Number(quantity) / 1_000_000} ADA...`, toastConfig);
   return gql(
     `
     mutation(
@@ -99,7 +100,7 @@ export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
   quantity: string,
   walletAddress: string
 ): Promise<void> => {
-  toast(`Minting ${quantity} ${assetName}.`);
+  toast(`Minting ${quantity} ${assetName}...`, toastConfig);
   return gql(
     `mutation(
       $assetName: String!
