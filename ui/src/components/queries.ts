@@ -1,14 +1,7 @@
 import toast from "react-hot-toast";
 import { TUtxo } from "./types";
 
-const protocol = {
-  "apiUrl": "https://testnet.softserve.studio/graphql",
-  "factory": "a0a4922a48c8536f10d6cec0769ca1af509653016519a2935f21b57a.factory",
-  "genesis": {
-    "address": "1d28f8b4b73eecab9503448ceb96ef8af9ba87c13ab7165644effdcd60739128",
-    "index": 1
-  }
-};
+const API_URL = "";
 
 const gql = (
   query: string,
@@ -23,7 +16,7 @@ const gql = (
     console.log(JSON.stringify(variables, null, 2));
   }
   // Make request
-  return fetch(protocol.apiUrl, {
+  return fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables }),
