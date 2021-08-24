@@ -20,10 +20,10 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-//go:embed built.txt
+//go:embed internal/built.txt
 var built string
 
-//go:embed version.txt
+//go:embed internal/version.txt
 var version string
 
 var opts struct {
