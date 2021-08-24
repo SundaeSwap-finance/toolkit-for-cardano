@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { toastConfig } from "./notifications/toastConfig";
 import { TUtxo } from "./types";
 
-const API_URL = "";
+const API_URL = "/graphql";
 
 const gql = (
   query: string,
