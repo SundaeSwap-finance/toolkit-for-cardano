@@ -16,9 +16,9 @@ RUN yarn install && yarn local:build
 
 FROM scratch
 
-EXPOSE 8888
+EXPOSE 3200
 
-ENV PORT   8888
+ENV PORT   3200
 ENV ASSETS /opt/cardano-toolkit/assets
 
 COPY --from=golang /work/cardano-toolkit /opt/cardano-toolkit/bin/cardano-toolkit

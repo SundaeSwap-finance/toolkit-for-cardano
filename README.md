@@ -20,7 +20,7 @@ Launch the `cardano-toolkit` server which exposes a graphql endpoint, `/graphql`
 export TREASURY_ADDR="..."              # address of treasury wallet e.g. addr
 export TREASURY_SIGNING_KEY_FILE="..."  # path to .skey file
 docker run -it --rm \
-  -p 8888:8888 \
+  -p 3200:3200 \
   -v /nix:/nix \
   -v ${HOME}:${HOME} \
   sundaeswap/cardano-toolkit \
@@ -32,7 +32,7 @@ docker run -it --rm \
     --treasury-skey-file "${TREASURY_SIGNING_KEY_FILE}"
 ```
 
-The graphql endpoint will be on port 8888 at `/graphql`
+The graphql endpoint will be on port 3200 at `/graphql`
 
 Notes:
 * `/nix` is mounted assuming the `cardano-cli` was built with nix and needs access to `/nix/store`
