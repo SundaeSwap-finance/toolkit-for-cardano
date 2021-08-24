@@ -30,13 +30,18 @@ import (
 
 var reValueNotConserved = regexp.MustCompile(`ValueNotConservedUTxO\s*\(Value\s+0`)
 
-func (r *Resolver) WalletCreate(ctx context.Context, args struct{ InitialFunds *string }) (string, error) {
+type WalletCreateArgs struct {
+	InitialFunds *string
+	Name         *string
+}
+
+func (r *Resolver) WalletCreate(ctx context.Context, args WalletCreateArgs) (string, error) {
 	var initialFunds string
 	if args.InitialFunds != nil {
 		initialFunds = *args.InitialFunds
 	}
 
-	return r.config.CLI.CreateWallet(ctx, initialFunds)
+	return r.config.CLI.CreateWallet(ctx, initialFunds, StringValue(args.Name))
 }
 
 type WalletFundArgs struct {

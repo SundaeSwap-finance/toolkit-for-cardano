@@ -11,7 +11,9 @@ FROM node as node
 ADD ui /work
 WORKDIR /work
 
-RUN yarn install && yarn local:build
+RUN yarn install && \
+	yarn local:clean && \
+	yarn local:build
 
 
 FROM scratch

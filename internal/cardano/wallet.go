@@ -39,17 +39,31 @@ const (
 	dirWallets = "wallets" // dirWallets contains wallets
 )
 
-func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet string, err error) {
+// reWalletName ensures folks don't play games with the names
+var reWalletName = regexp.MustCompile(`^[a-zA-Z0-9.\-_ ']*$`)
+
+func (c CLI) CreateWallet(ctx context.Context, initialFunds, name string) (wallet string, err error) {
 	defer func(begin time.Time) {
 		zapctx.FromContext(ctx).Info("created wallet",
+			zap.String("name", name),
 			zap.Duration("elapsed", time.Now().Sub(begin).Round(time.Millisecond)),
 			zap.Error(err),
 		)
 	}(time.Now())
 
-	addr := ksuid.New().String()
+	if !reWalletName.MatchString(name) {
+		return "", fmt.Errorf("failed to create wallet: invalid name, must match ^[a-zA-Z0-9.\\-_ ']*$")
+	}
+	if name == "" {
+		name = ksuid.New().String()
+	}
 	if err := os.MkdirAll(filepath.Join(c.Dir, dirWallets), 0755); err != nil {
 		return "", fmt.Errorf("unable to create wallet: unable to create directory, %v: %w", dirWallets, err)
+	}
+
+	// don't allow existing wallets to be overwritten
+	if _, err := os.Stat(fmt.Sprintf("%v/%v.skey", dirWallets, name)); !os.IsNotExist(err) {
+		return "", fmt.Errorf("unable to create wallet, %v: wallet already exists", name)
 	}
 
 	// Payment address keys
@@ -58,8 +72,8 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet stri
 	// --signing-key-file      addresses/${ADDR}.skey
 	_, err = c.exec(
 		"address", "key-gen",
-		"--verification-key-file", fmt.Sprintf("%v/%v.vkey", dirWallets, addr),
-		"--signing-key-file", fmt.Sprintf("%v/%v.skey", dirWallets, addr),
+		"--verification-key-file", fmt.Sprintf("%v/%v.vkey", dirWallets, name),
+		"--signing-key-file", fmt.Sprintf("%v/%v.skey", dirWallets, name),
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create wallet: failed to create payment address keys: %w", err)
@@ -71,8 +85,8 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet stri
 	// --signing-key-file      addresses/${ADDR}-stake.skey
 	_, err = c.exec(
 		"stake-address", "key-gen",
-		"--verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, addr),
-		"--signing-key-file", fmt.Sprintf("%v/%v-stake.skey", dirWallets, addr),
+		"--verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, name),
+		"--signing-key-file", fmt.Sprintf("%v/%v-stake.skey", dirWallets, name),
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create wallet: failed to create stake address key: %w", err)
@@ -86,10 +100,10 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet stri
 	// --out-file addresses/${ADDR}.addr
 	_, err = c.exec(
 		"address", "build",
-		"--payment-verification-key-file", fmt.Sprintf("%v/%v.vkey", dirWallets, addr),
-		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, addr),
+		"--payment-verification-key-file", fmt.Sprintf("%v/%v.vkey", dirWallets, name),
+		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, name),
 		"--testnet-magic", c.TestnetMagic,
-		"--out-file", fmt.Sprintf("%v/%v.addr", dirWallets, addr),
+		"--out-file", fmt.Sprintf("%v/%v.addr", dirWallets, name),
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create wallet: failed to create payment address: %w", err)
@@ -102,9 +116,9 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet stri
 	// --out-file addresses/${ADDR}-stake.addr
 	_, err = c.exec(
 		"stake-address", "build",
-		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, addr),
+		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, name),
 		"--testnet-magic", c.TestnetMagic,
-		"--out-file", fmt.Sprintf("%v/%v-stake.addr", dirWallets, addr),
+		"--out-file", fmt.Sprintf("%v/%v-stake.addr", dirWallets, name),
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create wallet: failed to create stake address: %w", err)
@@ -116,18 +130,18 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds string) (wallet stri
 	// --out-file addresses/${ADDR}-stake.reg.cert
 	_, err = c.exec(
 		"stake-address", "registration-certificate",
-		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, addr),
-		"--out-file", fmt.Sprintf("%v/%v-stake.reg.cert", dirWallets, addr),
+		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, name),
+		"--out-file", fmt.Sprintf("%v/%v-stake.reg.cert", dirWallets, name),
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create wallet: failed to create stake address registration cert: %w", err)
 	}
 
-	if _, err := c.FundWallet(ctx, addr, initialFunds); err != nil {
+	if _, err := c.FundWallet(ctx, name, initialFunds); err != nil {
 		return "", fmt.Errorf("failed to create wallet: %w", err)
 	}
 
-	return addr, nil
+	return name, nil
 }
 
 var reQuantity = regexp.MustCompile(`^\d+$`)

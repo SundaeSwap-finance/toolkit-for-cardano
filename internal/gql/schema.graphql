@@ -22,6 +22,9 @@ type Query {
 
   # utxos -> `cardano version`
   version: Version
+
+  # wallets returns the list of wallets optionally filtered by the query
+  wallets(query: String): [String!]!
 }
 
 type Mutation {
@@ -46,7 +49,8 @@ type Mutation {
   sendFunds(source: String!, target: String, txIn: [TxIn!]!): Query
 
   # Creates a new address and optionally funds it with the specified amount of ADA.
-  walletCreate(initialFunds: String): String!
+  # name: allows for an optional wallet name [a-zA-Z0-9._\- ']
+  walletCreate(initialFunds: String, name: String): String!
 
   # Fund the specified address with ADA.  Deposits 1,000 ADA by default (1e3 * 1e6)
   walletFund(address: String!, quantity: String = "1000000000"): Query

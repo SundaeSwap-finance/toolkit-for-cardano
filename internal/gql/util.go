@@ -22,9 +22,16 @@
 
 package gql
 
-func StringPtr(s string) *string {
+func String(s string) *string {
 	if s == "" {
 		return nil
 	}
 	return &s
+}
+
+func StringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

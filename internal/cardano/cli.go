@@ -41,6 +41,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	suffixAddr      = ".addr"       // suffixAddr contains suffix for addresses
+	suffixStakeAddr = "-stake.addr" // suffixStakeAddr contains suffix for stake addresses
+)
+
 var (
 	reID         = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
 	reGit        = regexp.MustCompile(`(?m)^(git.*)`)
@@ -353,6 +358,31 @@ func (c CLI) Version() (version Version, err error) {
 	}
 
 	return version, nil
+}
+
+func (c CLI) FindAllWallets(query string) ([]string, error) {
+	entries, err := os.ReadDir(filepath.Join(c.Dir, dirWallets))
+	if err != nil {
+		return nil, fmt.Errorf("failed to find all wallets: %w", err)
+	}
+
+	var wallets []string
+	for _, entry := range entries {
+		name := entry.Name()
+		if !strings.HasSuffix(name, suffixAddr) {
+			continue
+		}
+		if strings.Contains(name, suffixStakeAddr) {
+			continue
+		}
+		if query != "" && !strings.Contains(name, query) {
+			continue
+		}
+
+		wallets = append(wallets, name[0:len(name)-len(suffixAddr)])
+	}
+
+	return wallets, nil
 }
 
 func paymentVerificationKeyFile(dir, wallet string) string {
