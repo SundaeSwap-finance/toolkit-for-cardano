@@ -1,11 +1,9 @@
 package main
 
 import (
+	"embed"
 	_ "embed"
 	"fmt"
-	"github.com/savaki/zapctx"
-	"github.com/segmentio/ksuid"
-	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +15,10 @@ import (
 	"github.com/SundaeSwap-finance/cardano-toolkit/internal/gql/graphiql"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
+	"github.com/savaki/zapctx"
+	"github.com/segmentio/ksuid"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
 //go:embed internal/built.txt
@@ -25,6 +26,9 @@ var built string
 
 //go:embed internal/version.txt
 var version string
+
+//go:embed ui/dist/*
+var dist embed.FS
 
 var opts struct {
 	Assets  string // Assets contains optional directory for static assets
@@ -157,12 +161,28 @@ func action(_ *cli.Context) error {
 	if opts.Assets != "" {
 		fs := http.FileServer(http.Dir(opts.Assets))
 		router.NotFound(fs.ServeHTTP)
+	} else {
+		fs := withRoot("ui/dist", http.FS(dist))
+		router.NotFound(http.FileServer(fs).ServeHTTP)
 	}
 
 	logger.Info("started server", zap.Int("port", opts.Port))
 	defer logger.Info("stopped server")
 
 	return http.ListenAndServe(fmt.Sprintf(":%v", opts.Port), router)
+}
+
+type fileSystemFunc func(name string) (http.File, error)
+
+func (fn fileSystemFunc) Open(name string) (http.File, error) {
+	return fn(name)
+}
+
+func withRoot(root string, fs http.FileSystem) fileSystemFunc {
+	return func(name string) (http.File, error) {
+		path := filepath.Join(root, name)
+		return fs.Open(path)
+	}
 }
 
 func withCORS() func(next http.Handler) http.Handler {

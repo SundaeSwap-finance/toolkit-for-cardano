@@ -3,14 +3,14 @@ cardano-toolkit
 
 ![](docs/screenshot.png)
 
-`cardano-toolkit` attempts to simplify development smart contracts on Cardano
-by providing common functionality needed by teams:
+`cardano-toolkit` simplifies the development of Cardano smart contracts 
+by providing teams with frequently needed tasks:
 
-* mint tokens
-* create wallet
-* fund wallet
-* transfer funds
-* calculate fees
+* Mint Tokens
+* Create Wallet
+* Fund Wallet
+* Transfer Funds
+* Calculate Fees
 
 ### Quick Start
 
@@ -44,18 +44,21 @@ Notes:
 
 ## Building 
 
-#### docker
-
-To build the docker image:
+#### docker image
 
 ```docker build -t sundaeswap/cardano-toolkit .```
 
 
-#### cli
+#### self contained cli
 
-Assuming go 1.16 or better is installed
+Assuming go 1.16 or better and node 1.14 or better are installed 
 
-```GOOS=linux go build```
+```
+(cd ui && yarn install && yarn local:build)
+GOOS=linux go build
+```
+
+Change GOOS to match your target OS e.g. darwin, linux, windows, etc
 
 ## Concepts
 
