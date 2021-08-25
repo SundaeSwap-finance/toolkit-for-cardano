@@ -7,7 +7,6 @@ export const HomeBase = () => {
   return (
     <StyledHomeBase>
       <section>
-        <h2>Cardano Test Wallet</h2>
         <Wallet />
       </section>
       <section>

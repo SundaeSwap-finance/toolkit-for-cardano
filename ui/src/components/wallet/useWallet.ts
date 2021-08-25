@@ -1,6 +1,6 @@
 import { gqlGetUtxos, gqlMintAsset, gqlWalletCreate, gqlWalletFund } from "../queries";
 import create from "zustand";
-import { TAssetAmount, TUtxo } from "components/types";
+import { TUtxo } from "components/types";
 
 const LOCAL_STORAGE_KEY_WALLET = "cardanoToolkit:walletAddress";
 

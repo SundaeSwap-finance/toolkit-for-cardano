@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { toastConfig } from "./notifications/toastConfig";
-import { TUtxo } from "./types";
+import { TTip, TUtxo } from "./types";
 
 const API_URL = "/graphql";
 
@@ -39,22 +39,40 @@ const gql = (
     });
 };
 
-
 /**
  * Creates a new address and optionally funds it with the specified amount of ADA.
- * @param initialFunds
+ * @param name
  */
-export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
+export const gqlWalletCreate = (name?: string): Promise<string> => {
   return gql(
     `mutation(
       $initialFunds: String!
+      $name: String!
     ) {
-      walletCreate(initialFunds: $initialFunds)
+      walletCreate(
+        initialFunds: $initialFunds,
+        name: "$name",
+      )
     }`,
     {
-      initialFunds: initialFunds || String(423_654_000),
+      initialFunds: String(423_654_000),
+      name,
     },
     "walletCreate",
+  );
+};
+
+/**
+ * Gets all wallets
+ * @param name
+ */
+export const gqlWallets = (): Promise<string[]> => {
+  return gql(
+    `query {
+      wallets(query: "")
+    }`,
+    {},
+    "wallets",
   );
 };
 
@@ -120,6 +138,13 @@ export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
   );
 };
 
+/**
+ * Get all utxos for a wallet
+ * @param address
+ * @param excludeScripts
+ * @param excludeTokens
+ * @returns
+ */
 export const gqlGetUtxos = ({
   address,
   excludeScripts,
@@ -167,5 +192,26 @@ export const gqlGetUtxos = ({
       excludeTokens,
     },
     "utxos",
+  );
+};
+
+/**
+ * Get blockchain tip data
+ */
+export const gqlTip = (): Promise<TTip> => {
+  return gql(
+    `
+    query {
+      tip {
+        block
+        epoch
+        era
+        hash
+        slot
+      }
+    }
+    `,
+    {},
+    "tip"
   );
 };

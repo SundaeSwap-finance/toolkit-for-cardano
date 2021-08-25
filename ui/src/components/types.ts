@@ -26,3 +26,11 @@ export type TUtxo = {
   tokens: TToken[];
   value: string;
 };
+
+export type TTip = {
+  block: number;
+  epoch: number;
+  era: string;
+  hash: string;
+  slot: number;
+};
