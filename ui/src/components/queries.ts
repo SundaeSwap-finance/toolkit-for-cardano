@@ -51,7 +51,7 @@ export const gqlWalletCreate = (name?: string): Promise<string> => {
     ) {
       walletCreate(
         initialFunds: $initialFunds,
-        name: "$name",
+        name: $name,
       )
     }`,
     {
