@@ -29,6 +29,7 @@ phases:
 
   build:
     commands:
+      - go test ./...
       - |
         VERSION="0.${CODEBUILD_BUILD_NUMBER:=0}.$(echo "${CODEBUILD_RESOLVED_SOURCE_VERSION:=$(date +%Y%m%d%H%M%S)}" | cut -c1-7)"
         IMAGE="sundaeswap/cardano-toolkit:${VERSION}"
@@ -52,7 +53,7 @@ phases:
         AWS_ACCESS_KEY_ID=${DEV_ACCESS_KEY_ID} \
           AWS_SECRET_ACCESS_KEY=${DEV_SECRET_ACCESS_KEY} \
           AWS_REGION=${DEV_REGION} \
-          aws s3 cp version.txt s3://${S3_BUCKET}/${S3_KEY}/version.json
+          aws s3 cp version.json s3://${S3_BUCKET}/${S3_KEY}/version.json
 
 
 cache:
