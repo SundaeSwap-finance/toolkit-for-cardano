@@ -22,7 +22,7 @@ const StyledHomeBase = styled.main`
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  padding: 1em;
+  padding: 20px;
   section {
     height: 100%;
     width: 50%;
@@ -37,10 +37,12 @@ const StyledHomeBase = styled.main`
     }
   }
   @media(max-width: 45em) {
+    height: auto;
     flex-direction: column;
+    padding: 120px 40px 80px;
     section {
       width: 100%;
-      margin: 4em 0;
+      margin: 20px 0;
     }
   }
 `;
