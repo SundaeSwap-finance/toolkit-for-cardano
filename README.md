@@ -29,12 +29,10 @@ export TREASURY_ADDR="..."              # address of treasury wallet e.g. addr
 export TREASURY_SIGNING_KEY_FILE="..."  # path to .skey file
 docker run -it --rm \
   -p 3200:3200 \
-  -v /nix:/nix \
-  -v ${HOME}:${HOME} \
+  -v "${HOME}:${HOME}" \
+  -v "${CARDANO_NODE_SOCKET_PATH}:/ipc/node.sock" \
   sundaeswap/cardano-toolkit \
     --dir ${HOME}/sundaeswap/data \
-    --cardano-cli ${HOME}/bin/cardano-cli \
-    --socket-path "${CARDANO_NODE_SOCKET_PATH}" \
     --testnet-magic 31415 \
     --treasury-addr "${TREASURY_ADDR}" \
     --treasury-skey-file "${TREASURY_SIGNING_KEY_FILE}"
