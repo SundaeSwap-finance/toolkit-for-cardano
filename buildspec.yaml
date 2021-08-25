@@ -1,0 +1,61 @@
+version: 0.2
+
+env:
+  git-credential-helper: yes
+  secrets-manager:
+    DEV_ACCESS_KEY_ID: "dev/user/codebuild:AWS_ACCESS_KEY_ID"
+    DEV_SECRET_ACCESS_KEY: "dev/user/codebuild:AWS_SECRET_ACCESS_KEY"
+    DEV_REGION: "dev/user/codebuild:AWS_REGION"
+    S3_BUCKET: "dev/user/codebuild:S3_BUCKET"
+    DOCKER_USERNAME: docker:username
+    DOCKER_PASSWORD: docker:password
+
+  variables:
+    CGO_ENABLED: "0"
+    GOOS: "linux"
+    GOARCH: "amd64"
+
+proxy:
+  upload-artifacts: yes
+  logs: yes
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.16
+    commands:
+      - 'go version'
+      - 'go get ./...'
+
+  build:
+    commands:
+      - |
+        VERSION="${CODEBUILD_BUILD_NUMBER:=0}.$(echo "${CODEBUILD_RESOLVED_SOURCE_VERSION:=$(date +%Y%m%d%H%M%S)}" | cut -c1-7)"
+        IMAGE="sundaeswap/cardano-toolkit:${VERSION}"
+        LATEST="sundaeswap/cardano-toolkit:latest"
+
+        echo "logging in to docker hub"
+        docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
+
+        echo docker build -t "${IMAGE}" .
+        docker build -t "${IMAGE}" .
+        docker push "${IMAGE}"
+
+        echo docker tag "${IMAGE}" "${LATEST}"
+        docker tag "${IMAGE}" "${LATEST}"
+        docker push "${LATEST}"
+
+        echo "{\"image\":\"${VERSION}\"}" > version.txt
+        REPO="$(basename "${CODEBUILD_SRC_DIR:=${ROOT}}")"
+        S3_KEY="${REPO}/$(basename "${CODEBUILD_WEBHOOK_HEAD_REF:=unknown}")/${VERSION}"
+
+        AWS_ACCESS_KEY_ID=${DEV_ACCESS_KEY_ID} \
+          AWS_SECRET_ACCESS_KEY=${DEV_SECRET_ACCESS_KEY} \
+          AWS_REGION=${DEV_REGION} \
+          aws s3 cp version.txt s3://${S3_BUCKET}/${S3_KEY}/version.txt
+
+
+cache:
+  paths:
+    - '/root/.cache/go-build/**/*'
+
