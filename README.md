@@ -15,6 +15,9 @@ by providing teams with frequently needed tasks:
 * Transfer Funds
 * Calculate Fees
 
+`cardano-toolkit` is not intended as a replacement for a wallet, but rather a bridge 
+to allow teams to make progress while wallets are still under development.
+
 ### Quick Start
 
 ## Running docker (interactive mode)
