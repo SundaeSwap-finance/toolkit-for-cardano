@@ -47,7 +47,7 @@ func (r *Resolver) TxFee(ctx context.Context, args TxFeeArgs) (string, error) {
 		return "", fmt.Errorf("failed to calculate fee: %w", err)
 	}
 
-	f, err := ioutil.TempFile(filepath.Join(r.config.CLI.Dir, "/tmp"), "script")
+	f, err := ioutil.TempFile(filepath.Join(r.config.CLI.DataDir(), "/tmp"), "script")
 	if err != nil {
 		return "", fmt.Errorf("failed to calculate fee: %w", err)
 	}

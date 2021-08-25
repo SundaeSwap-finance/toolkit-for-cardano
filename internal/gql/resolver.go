@@ -23,6 +23,7 @@
 package gql
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"net/http"
@@ -35,9 +36,26 @@ import (
 //go:embed schema.graphql
 var textSchema string
 
+type Cardano interface {
+	Build(opts ...cardano.BuildOption) ([]byte, error)
+	CreateWallet(ctx context.Context, initialFunds, name string) (wallet string, err error)
+	DataDir() string
+	FindAllWallets(query string) ([]string, error)
+	FundWallet(ctx context.Context, address, quantity string) (tx cardano.Tx, err error)
+	KeyHash(ctx context.Context, wallet string) (keyHash string, err error)
+	MinFee(ctx context.Context, filename string, txIn, txOut, witnesses int32) (fee string, err error)
+	NormalizeAddress(address string) (string, error)
+	PolicyID(ctx context.Context, filename string) (policyID string, err error)
+	QueryTip() (*cardano.Tip, error)
+	Sign(ctx context.Context, raw []byte, wallets ...string) (data []byte, err error)
+	Submit(ctx context.Context, signed []byte) (err error)
+	Utxos(address string, excludes ...func(cardano.Utxo) bool) (utxos cardano.Utxos, err error)
+	Version() (version cardano.Version, err error)
+}
+
 type Config struct {
 	Built   string
-	CLI     *cardano.CLI
+	CLI     Cardano
 	Version string
 }
 

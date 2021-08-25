@@ -299,6 +299,11 @@ func (c CLI) QueryTip() (*Tip, error) {
 	return &tip, nil
 }
 
+// DataDir returns the path to the directory containing the server data
+func (c CLI) DataDir() string {
+	return c.Dir
+}
+
 // Utxos retrieves the list of utxos from cardano node.
 //
 //		TxHash                                 TxIx        Amount

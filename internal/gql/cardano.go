@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"path/filepath"
 	"time"
@@ -57,7 +58,7 @@ func (r *Resolver) buildMintTx(ctx context.Context, input BuildMintTxInput) (raw
 		return nil, fmt.Errorf("failed to build mint tx: %w", err)
 	}
 
-	script, scriptCleanup, err := buildScript(r.config.CLI.Dir, keyHash)
+	script, scriptCleanup, err := buildScript(r.config.CLI.DataDir(), keyHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build mint tx: %w", err)
 	}
@@ -73,11 +74,23 @@ func (r *Resolver) buildMintTx(ctx context.Context, input BuildMintTxInput) (raw
 		return nil, fmt.Errorf("failed to build mint tx: %w", err)
 	}
 
+	value, ok := big.NewInt(0).SetString(input.TxIn.Value, 10)
+	if !ok {
+		return nil, fmt.Errorf("mint failed to parse txIn amount, %v", input.TxIn.Value)
+	}
+
+	fee, ok := big.NewInt(0).SetString(input.Fee, 10)
+	if !ok {
+		return nil, fmt.Errorf("mint failed to parse fee, %v", fee)
+	}
+
+	remain := big.NewInt(0).Sub(value, fee)
+
 	mintedTokens := fmt.Sprintf("%v %v.%v", input.Quantity, policyID, input.AssetName)
 	return r.config.CLI.Build(
 		cardano.Fee(input.Fee),
 		cardano.TxIn(input.TxIn.Address, input.TxIn.Index),
-		cardano.TxOut(address, input.TxIn.Value, mintedTokens),
+		cardano.TxOut(address, remain.String(), mintedTokens),
 		cardano.Mint(mintedTokens),
 		cardano.MintScriptFile(fmt.Sprintf(script)),
 	)

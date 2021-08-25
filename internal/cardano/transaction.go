@@ -53,20 +53,20 @@ type txOut struct {
 }
 
 type BuildOptions struct {
-	fee            string
-	mint           string
-	mintScriptFile string
-	txIn           []txIn
-	txOut          []txOut
+	Fee            string
+	Mint           string
+	MintScriptFile string
+	TxIn           []txIn
+	TxOut          []txOut
 }
 
-func buildOptions(opts ...BuildOption) BuildOptions {
+func MakeBuildOptions(opts ...BuildOption) BuildOptions {
 	var options BuildOptions
 	for _, opt := range opts {
 		opt(&options)
 	}
-	if options.fee == "" {
-		options.fee = "0"
+	if options.Fee == "" {
+		options.Fee = "0"
 	}
 
 	return options
@@ -76,25 +76,25 @@ type BuildOption func(options *BuildOptions)
 
 func Fee(fee string) BuildOption {
 	return func(options *BuildOptions) {
-		options.fee = fee
+		options.Fee = fee
 	}
 }
 
 func Mint(s string) BuildOption {
 	return func(options *BuildOptions) {
-		options.mint = s
+		options.Mint = s
 	}
 }
 
 func MintScriptFile(filename string) BuildOption {
 	return func(options *BuildOptions) {
-		options.mintScriptFile = filename
+		options.MintScriptFile = filename
 	}
 }
 
 func TxIn(address string, index int32) BuildOption {
 	return func(options *BuildOptions) {
-		options.txIn = append(options.txIn, txIn{
+		options.TxIn = append(options.TxIn, txIn{
 			Address: address,
 			Index:   index,
 		})
@@ -103,7 +103,7 @@ func TxIn(address string, index int32) BuildOption {
 
 func TxOut(address string, quantity string, tokens ...string) BuildOption {
 	return func(options *BuildOptions) {
-		options.txOut = append(options.txOut, txOut{
+		options.TxOut = append(options.TxOut, txOut{
 			Address:  address,
 			Quantity: quantity,
 			Tokens:   tokens,
@@ -117,18 +117,18 @@ func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 		defer func() { os.Remove(filename) }()
 	}
 
-	options := buildOptions(opts...)
+	options := MakeBuildOptions(opts...)
 	args := []string{
 		"transaction", "build-raw",
-		"--fee", options.fee,
+		"--fee", options.Fee,
 		"--alonzo-era",
 		"--out-file", filename,
 	}
 
-	for _, in := range options.txIn {
+	for _, in := range options.TxIn {
 		args = append(args, "--tx-in", fmt.Sprintf("%v#%v", in.Address, in.Index))
 	}
-	for _, in := range options.txOut {
+	for _, in := range options.TxOut {
 		address, err := c.NormalizeAddress(in.Address)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build tx: %w", err)
@@ -140,11 +140,11 @@ func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 		}
 		args = append(args, "--tx-out", output)
 	}
-	if options.mint != "" {
-		args = append(args, "--mint="+options.mint)
+	if options.Mint != "" {
+		args = append(args, "--mint="+options.Mint)
 	}
-	if options.mintScriptFile != "" {
-		args = append(args, "--mint-script-file="+options.mintScriptFile)
+	if options.MintScriptFile != "" {
+		args = append(args, "--mint-script-file="+options.MintScriptFile)
 	}
 
 	fmt.Println()
