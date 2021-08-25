@@ -1,11 +1,16 @@
+import { A } from "../styled/A";
 import React from "react";
 import styled from "styled-components";
 
 export const Footer = () => {
-  // TODO: Include epoch/blocks?
   return (
     <StyledFooter>
-      <p>Cardano Toolkit Made by Your Friends at SundaeSwap</p>
+      <p>
+        <A href="https://sundaeswap.finance" target="_blank">Scoops by SundaeSwap</A>
+      </p>
+      <p>
+        <A href="https://github.com/SundaeSwap-finance/cardano-toolkit" target="_blank">Github Repo</A>
+      </p>
     </StyledFooter>
   );
 };
@@ -15,7 +20,14 @@ export const StyledFooter = styled.footer`
   bottom: 0;
   left: 0;
   right: 0;
-  text-align: center;
-  color: white;
-  opacity: 0.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 20px;
+  p {
+    font-size: 12px;
+  }
+  @media(max-width: 45em) {
+    position: initial;
+  }
 `;

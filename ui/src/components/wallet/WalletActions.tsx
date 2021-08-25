@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useWallet } from "./useWallet";
 import Input from "../styled/Input";
+import { A } from "../styled/A";
 
 export const WalletActions = () => {
   const { fundWallet, isWalletConnected, mintAsset } = useWallet();
@@ -25,9 +26,11 @@ export const WalletActions = () => {
   // --- Not connected
   if (!isWalletConnected) {
     return (
-      <StyledWalletActions>
+      <StyledWalletIntro>
         <h2>Connect a wallet to begin!</h2>
-      </StyledWalletActions>
+        <p>The <A href="https://github.com/SundaeSwap-finance/cardano-toolkit" target="_blank">cardano-toolkit</A> simplifies the development of Cardano smart contracts by providing teams with frequently needed tasks.</p>
+        <p>This UI demonstrates a handful of graphql queries and can be a tool in your development process!</p>
+      </StyledWalletIntro>
     )
   }
   // --- Connected
@@ -39,7 +42,7 @@ export const WalletActions = () => {
         </div>
         <div className="wallet__action__body">
           <Input type="text" placeholder="0.0" value={fundQuantity} onChange={(e) => setFundQuantity(e.target.value)} />
-          <Button size="xs" onClick={fundHandler}>Fund</Button>
+          <Button size="xs" onClick={fundHandler}>Deposit ADA</Button>
         </div>
       </StyledWalletAction>
       <StyledWalletAction>
@@ -49,7 +52,7 @@ export const WalletActions = () => {
         <div className="wallet__action__body">
           <Input type="text" placeholder="---" value={mintAssetName} onChange={(e) => setMintAssetName(e.target.value)} />
           <Input type="text" placeholder="0.0" value={mintAssetQuantity} onChange={(e) => setMintAssetQuantity(e.target.value)} />
-          <Button size="xs" onClick={mintAssetHandler}>Mint</Button>
+          <Button size="xs" onClick={mintAssetHandler}>Mint Asset</Button>
         </div>
       </StyledWalletAction>
     </StyledWalletActions>
@@ -103,5 +106,19 @@ export const StyledWalletActions = styled.div`
   }
   ${StyledWalletAction} {
     margin: 12px 0;
+  }
+`;
+
+export const StyledWalletIntro = styled(StyledWalletActions)`
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1em;
+  h2, p {
+    opacity: 0.7;
+    margin: 0.25em 0;
+  }
+  p {
+    opacity: 0.5;
   }
 `;
