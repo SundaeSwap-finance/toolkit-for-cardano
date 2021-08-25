@@ -4,6 +4,8 @@ import { useWallet } from "./useWallet";
 import useInterval from "../hooks/useInterval";
 import { Button } from "../styled/Button";
 import Input from "../styled/Input";
+import Select from "../styled/Select";
+import { gqlWallets } from "../queries";
 
 export const Wallet = () => {
   // Get wallet/actions context
@@ -17,8 +19,6 @@ export const Wallet = () => {
     walletBalanceAssets,
     walletUtxos,
   } = useWallet();
-  // Save wallet string being selected/entered
-  const [walletAddressSelection, setWalletAddressSelection] = useState("");
   // Continually refresh utxos (on mount/connection also fetch)
   useEffect(() => {
     if (isWalletConnected) refreshUtxos();
@@ -27,6 +27,11 @@ export const Wallet = () => {
   // Section
   const [walletSection, setWalletSection] = useState<"balance" | "utxos">("balance");
   const [walletTokenFilter, setWalletTokenFilter] = useState("");
+  // Save wallet string being typed in, to be created
+  const [newWalletAddress, setNewWalletAddress] = useState("");
+  // Get wallet options for user (refresh on wallet creations/disconnections)
+  const [walletOptions, setWalletOptions] = useState<string[]>([]);
+  useEffect(() => { gqlWallets().then(setWalletOptions); }, [isWalletConnected]);
 
   // Render
   // --- Not connected
@@ -34,18 +39,19 @@ export const Wallet = () => {
     return (
       <StyledWallet>
         <div className="wallet__disconnected">
-          <div className="connect">
-            <small>Connect to an existing wallet!</small>
-            <Input value={walletAddress} placeholder="---" onChange={(e) => setWalletAddressSelection(e.target.value)} />
-            <Button size="xs" disabled={!walletAddressSelection} onClick={() => connectWallet(walletAddressSelection, !!walletAddressSelection)}>
-              Connect to Wallet
-            </Button>
-          </div>
           <div className="create">
             <small>Create a new wallet!</small>
-            <Button size="xs" onClick={() => connectWallet()}>
+            <Input value={walletAddress} placeholder="-- wallet address --" onChange={(e) => setNewWalletAddress(e.target.value)} />
+            <Button size="xs" onClick={() => connectWallet(newWalletAddress, false)}>
               Create New Wallet
             </Button>
+          </div>
+          <div className="connect">
+            <small>Connect to an existing wallet!</small>
+            <Select onChange={(e) => connectWallet(e.target.value, true)}>
+              <option>---</option>
+              {walletOptions.sort().map((wallet) => <option key={wallet} value={wallet}>{wallet}</option>)}
+            </Select>
           </div>
         </div>
       </StyledWallet>
@@ -73,7 +79,7 @@ export const Wallet = () => {
           <>
             <div className="wallet__ada">
               <span>ADA Balance:</span>
-              <span>₳ {(Number(walletBalanceADA) / 1_000_000).toLocaleString()}</span>
+              <span>₳ {(Number(walletBalanceADA ?? 0) / 1_000_000).toLocaleString()}</span>
             </div>
             <div className="wallet__assets">
               {Object.entries(walletBalanceAssets ?? {}).map(([assetId, amount]) => (
@@ -144,7 +150,7 @@ export const StyledWallet = styled.div`
     align-items: center;
     text-align: center;
     padding: 1em 2em;
-    input {
+    input, select, option {
       text-align: center;
     }
     .create, .connect {
@@ -158,11 +164,17 @@ export const StyledWallet = styled.div`
       justify-content: center;
       flex-direction: column;
       small {
-        margin-bottom: 12px;
+        margin-bottom: 6px;
       }
-      input {
+      input, select {
         margin-bottom: 8px;
         width: 80%;
+      }
+      select {
+        margin-bottom: 24px;
+      }
+      button {
+        margin-bottom: 16px;
       }
     }
   }

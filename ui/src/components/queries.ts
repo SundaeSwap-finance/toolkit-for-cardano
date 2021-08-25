@@ -39,22 +39,40 @@ const gql = (
     });
 };
 
-
 /**
  * Creates a new address and optionally funds it with the specified amount of ADA.
- * @param initialFunds
+ * @param name
  */
-export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
+export const gqlWalletCreate = (name?: string): Promise<string> => {
   return gql(
     `mutation(
       $initialFunds: String!
+      $name: String!
     ) {
-      walletCreate(initialFunds: $initialFunds)
+      walletCreate(
+        initialFunds: $initialFunds,
+        name: "$name",
+      )
     }`,
     {
-      initialFunds: initialFunds || String(423_654_000),
+      initialFunds: String(423_654_000),
+      name,
     },
     "walletCreate",
+  );
+};
+
+/**
+ * Gets all wallets
+ * @param name
+ */
+export const gqlWallets = (): Promise<string[]> => {
+  return gql(
+    `query {
+      wallets(query: "")
+    }`,
+    {},
+    "wallets",
   );
 };
 
