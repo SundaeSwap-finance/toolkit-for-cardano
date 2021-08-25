@@ -233,13 +233,13 @@ func (c *CLI) NormalizeAddress(address string) (string, error) {
 		return address, nil
 	}
 
-	if !reID.MatchString(address) {
-		return address, nil
-	}
-
+	address = strings.TrimSpace(address)
 	filename := filepath.Join(c.Dir, dirWallets, address+".addr")
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return address, nil
+		}
 		return "", fmt.Errorf("unable to read wallet: %w", err)
 	}
 

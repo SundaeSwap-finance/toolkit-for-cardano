@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
+
+	"github.com/tj/assert"
 )
 
 func TestReUtxo(t *testing.T) {
@@ -50,4 +52,15 @@ func TestReUtxo(t *testing.T) {
 			encoder.Encode(matches)
 		})
 	}
+}
+
+func TestNormalize(t *testing.T) {
+	cli := &CLI{Dir: "testdata"}
+	got, err := cli.NormalizeAddress("sample")
+	assert.Nil(t, err)
+	assert.Equal(t, "blah", got)
+
+	got, err = cli.NormalizeAddress("foo")
+	assert.Nil(t, err)
+	assert.Equal(t, "foo", got)
 }
