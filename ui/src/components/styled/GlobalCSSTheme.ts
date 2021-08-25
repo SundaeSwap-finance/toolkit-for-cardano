@@ -193,6 +193,10 @@ export const GlobalCSSVariables = createGlobalStyle`
     --gradient-silky: linear-gradient(rgba(250, 249, 250, 0) 0%, rgba(250, 249, 250, 0.26) 11.14%, rgba(250, 249, 250, 0.45) 25.87%, rgba(250, 249, 250, 0.58) 31.44%, rgba(250, 249, 250, 0.64) 43.85%, rgba(250, 249, 250, 0.79) 57.84%, rgba(250, 249, 250, 0.94) 71.67%, rgb(250, 249, 250) 100%);
     --gradient-card-header: linear-gradient(to right, rgb(248, 228, 167) 0%, rgb(244, 181, 177) 100%);
 
+    --gradient-sundae-dark: linear-gradient(to right, #e4a0f8 0%, #cfa7f7 21.67%, #c5a6f7 39.41%, #abaef6 53.69%, #afd7f5 100%);
+    --gradient-silky-dark: linear-gradient(rgba(56, 53, 53, 0) 0%, rgba(56, 53, 53, 0.26) 0%, rgba(56, 53, 53, 0.45) 18.66%, rgba(56, 53, 53, 0.58) 31.44%, rgba(56, 53, 53, 0.64) 43.85%, rgba(56, 53, 53, 0.79) 63.55%, rgba(56, 53, 53, 0.84) 85.71%, #383535 100%);
+    --gradient-card-header-dark: linear-gradient(to right, #d6a7f8 0%, #b1d5f4 100%);
+
     /** BAR GRAPH GRADIENTS */
     --bar-1: #f5b2af;
     --bar-2: #f6c0ab;
