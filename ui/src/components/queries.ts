@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { toastConfig } from "./notifications/toastConfig";
-import { TUtxo } from "./types";
+import { TTip, TUtxo } from "./types";
 
 const API_URL = "/graphql";
 
@@ -120,6 +120,13 @@ export const gqlWalletCreate = (initialFunds?: string): Promise<string> => {
   );
 };
 
+/**
+ * Get all utxos for a wallet
+ * @param address
+ * @param excludeScripts
+ * @param excludeTokens
+ * @returns
+ */
 export const gqlGetUtxos = ({
   address,
   excludeScripts,
@@ -167,5 +174,26 @@ export const gqlGetUtxos = ({
       excludeTokens,
     },
     "utxos",
+  );
+};
+
+/**
+ * Get blockchain tip data
+ */
+export const gqlTip = (): Promise<TTip> => {
+  return gql(
+    `
+    query {
+      tip {
+        block
+        epoch
+        era
+        hash
+        slot
+      }
+    }
+    `,
+    {},
+    "tip"
   );
 };
