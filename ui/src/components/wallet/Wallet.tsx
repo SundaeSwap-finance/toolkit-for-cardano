@@ -15,6 +15,7 @@ export const Wallet = () => {
     refreshUtxos,
     walletBalanceADA,
     walletBalanceAssets,
+    walletUtxos,
   } = useWallet();
   // Save wallet string being selected/entered
   const [walletAddressSelection, setWalletAddressSelection] = useState("");
@@ -23,6 +24,9 @@ export const Wallet = () => {
     if (isWalletConnected) refreshUtxos();
   }, [isWalletConnected]);
   useInterval(() => { refreshUtxos(); }, 4000);
+  // Section
+  const [walletSection, setWalletSection] = useState<"balance" | "utxos">("balance");
+  const [walletTokenFilter, setWalletTokenFilter] = useState("");
 
   // Render
   // --- Not connected
@@ -47,32 +51,74 @@ export const Wallet = () => {
       </StyledWallet>
     );
   }
+
   // --- Connected
   return (
     <StyledWallet>
-      <div className="wallet__address">
-        <div>
-          <small>Wallet</small>
-          {walletAddress}
-        </div>
-        <Button size="xxs" onClick={disconnectWallet}>Disconnect</Button>
-      </div>
-      <div className="wallet__ada">
-        <span>Balance:</span>
-        <span>₳ {(Number(walletBalanceADA) / 1_000_000).toLocaleString()}</span>
-      </div>
-      <div className="wallet__assets">
-        {Object.entries(walletBalanceAssets ?? {}).map(([assetId, amount]) => (
-          <div key={assetId} className="wallet__asset">
-            <div>
-              <p>{assetId.split('.')[1]}</p>
-              <small>{assetId.split('.')[0]}</small>
-            </div>
-            <div>
-              <p>{amount}</p>
-            </div>
+      <div className="wallet__header">
+        <header>
+          <div>
+            <small>Wallet</small>
+            {walletAddress}
           </div>
-        ))}
+          <Button size="xxs" onClick={disconnectWallet}>Disconnect</Button>
+        </header>
+        <div>
+          <span className={walletSection === "balance" ? "active" : ""} onClick={() => setWalletSection("balance")}>Balances</span>
+          <span className={walletSection === "utxos" ? "active" : ""} onClick={() => setWalletSection("utxos")}>UTXOs</span>
+        </div>
+      </div>
+      <div className="wallet__body">
+        {walletSection === "balance" && (
+          <>
+            <div className="wallet__ada">
+              <span>ADA Balance:</span>
+              <span>₳ {(Number(walletBalanceADA) / 1_000_000).toLocaleString()}</span>
+            </div>
+            <div className="wallet__assets">
+              {Object.entries(walletBalanceAssets ?? {}).map(([assetId, amount]) => (
+                <div key={assetId} className="wallet__asset">
+                  <div>
+                    <p>{assetId.split('.')[1]}</p>
+                    <small>{assetId.split('.')[0]}</small>
+                  </div>
+                  <div>
+                    <p>{amount}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {walletSection === "utxos" && (
+          <>
+            <div className="wallet__utxos__filter">
+              <Input
+                value={walletTokenFilter}
+                placeholder="Filter by token name..."
+                onChange={(e) => setWalletTokenFilter(e.target.value)}
+              />
+            </div>
+            <div className="wallet__utxos">
+              {walletUtxos
+                .filter((utxo) => !!walletTokenFilter ? utxo.tokens.some((t) => new RegExp(walletTokenFilter, 'i').test(t.asset.assetName)) : true)
+                .sort((a, b) => Number(b.value) - Number(a.value))
+                .map((utxo) => (
+                  <div key={`${utxo.address}-${utxo.index}`} className="wallet__utxo">
+                    <p className="wallet__utxo__values">
+                      <span>{utxo.value} ₳</span>
+                      {utxo.tokens.map((token) => (
+                        <span key={`${token.asset.assetName}${token.quantity}`}>{token.quantity} {token.asset.assetName}</span>
+                      ))}
+                    </p>
+                    <p className="wallet__utxo__address">
+                      <span>{utxo.address}</span><span>#{utxo.index}</span>
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
       </div>
     </StyledWallet>
   );
@@ -80,14 +126,14 @@ export const Wallet = () => {
 
 export const StyledWallet = styled.div`
   transition: box-shadow 0.25s ease;
-  height: 480px;
+  height: 520px;
   width: 420px;
   max-width: 100%;
+  overflow: hidden;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-liq-card);
   background: var(--main-bg);
   color: var(--text);
-  overflow-y: scroll;
 
   .wallet__disconnected {
     height: 100%;
@@ -121,31 +167,60 @@ export const StyledWallet = styled.div`
     }
   }
 
-  .wallet__address {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px 18px;
+  .wallet__header {
+    & > header {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 18px;
+      & > div {
+        display: flex;
+        flex-direction: column;
+        small {
+          font-size: 10px;
+          opacity: 0.4;
+          margin-top: -4px;
+          margin-bottom: 2px;
+        }
+      }
+    }
     & > div {
       display: flex;
-      flex-direction: column;
-      small {
-        font-size: 10px;
-        opacity: 0.4;
-        margin-top: -4px;
-        margin-bottom: 2px;
+      justify-content: flex-start;
+      padding: 0 20px;
+      span {
+        margin-right: 12px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--text);
+        color: var(--text);
+        font-size: 14px;
+        cursor: pointer;
+        &.active {
+          color: var(--text-primary);
+          border-bottom: 2px solid var(--text-primary);
+        }
       }
     }
   }
+  .wallet__body {
+    height: 100%;
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   .wallet__ada {
     padding: 18px 18px;
-    border-top: 1px solid var(--main-bg);
     border-bottom: 1px solid var(--main-bg);
     background: var(--swapbox-bg);
     display: flex;
     justify-content: space-between;
   }
+
   .wallet__assets {
-    height: 100%;
+    height: auto;
     background: var(--swapbox-bg);
   }
   .wallet__asset {
@@ -172,6 +247,46 @@ export const StyledWallet = styled.div`
     small {
       font-size: 8px;
       opacity: 0.3;
+    }
+  }
+
+  .wallet__utxos {
+    height: auto;
+    background: var(--swapbox-bg);
+  }
+  .wallet__utxos__filter {
+    width: 100%;
+    input {
+      width: 100%;
+      border-radius: 0;
+      font-size: 12px;
+      padding: 14px 20px 10px;
+    }
+  }
+  .wallet__utxo {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 18px;
+    border-bottom: 1px solid var(--main-bg);
+    font-size: 10px;
+    letter-spacing: -0.2px;
+    &__address {
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      color: var(--text-muted);
+    }
+    &__values {
+      margin: 2px 0 4px;
+      span:not(:first-of-type) {
+        color: var(--text-primary);
+        &::before {
+          content: "/";
+          margin: 0 4px;
+          color: var(--text-silent);
+        }
+      }
     }
   }
 `;
