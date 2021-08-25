@@ -6,6 +6,9 @@ cardano-toolkit
 `cardano-toolkit` simplifies the development of Cardano smart contracts 
 by providing teams with frequently needed tasks:
 
+* Build Transactions
+* Sign Transactions
+* Submit Transactions
 * Mint Tokens
 * Create Wallet
 * Fund Wallet
