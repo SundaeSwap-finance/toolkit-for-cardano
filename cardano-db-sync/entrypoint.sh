@@ -3,7 +3,6 @@
 set -eu
 
 CONFIG="${CONFIG:=/ipc-config/cardano-db-sync-config.json}"
-DIR="/ipc-config"
 
 
 #-- inline functions -----------------------------------------

@@ -71,8 +71,8 @@ phases:
         CONFIGURE_IMAGE="sundaeswap/cardano-db-sync-configure:${VERSION}"
         CONFIGURE_LATEST="sundaeswap/cardano-db-sync-configure:latest"
 
-        echo docker build -t "${IMAGE}" cardano-db-sync
-        docker build -t "${CONFIGURE_IMAGE}" cardano-db-sync
+        echo docker build -t "${IMAGE}" cardano-db-sync-configure
+        docker build -t "${CONFIGURE_IMAGE}" cardano-db-sync-configure
         docker push "${CONFIGURE_IMAGE}"
 
         echo docker tag "${CONFIGURE_IMAGE}" "${CONFIGURE_LATEST}"
