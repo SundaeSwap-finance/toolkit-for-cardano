@@ -1,0 +1,115 @@
+version: "3.5"
+
+services:
+
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-11.5-alpine}
+    environment:
+      - POSTGRES_LOGGING=true
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    shm_size: '1gb'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+        
+  cardano-toolkit:
+    image: sundaeswap/cardano-toolkit:latest
+    environment:
+      - CARDANO_NODE_SOCKET_PATH=/ipc-node/node.sock
+      - DATA_DIR=/data
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - TESTNET_MAGIC=${TESTNET_MAGIC}
+      - TREASURY_ADDR_FILE=/addresses/treasury.addr
+      - TREASURY_SIGNING_KEY_FILE=/addresses/treasury.skey
+    ports:
+      - ${CARDANO_TOOLKIT_PORT:-3200}:3200
+    depends_on:
+      - cardano-db-sync-configure
+      - cardano-db-sync-extended
+      - postgres
+    volumes:
+      - /home/ubuntu/alonzo-testnet/node-bft1/node.sock:/ipc-node/node.sock
+      - ./addresses:/addresses
+      - toolkit-data:/data
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  cardano-db-sync-configure:
+    image: sundaeswap/cardano-db-sync-configure:latest
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    volumes:
+      - /home/ubuntu/alonzo-testnet:/testnet
+      - ipc-config:/ipc-config
+    restart: 'no'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+        
+  cardano-node-configure:
+    image: inputoutput/cardano-node:1.29.0
+    volumes:
+      - ./scripts:/scripts
+      - ipc-config:/ipc-config
+    entrypoint:
+      - /scripts/hash-genesis.sh
+    restart: 'no'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+        
+  cardano-db-sync-extended:
+    image: sundaeswap/cardano-db-sync:latest
+    environment:
+      - EXTENDED=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    depends_on:
+      - cardano-db-sync-configure
+      - postgres
+    volumes:
+      - /home/ubuntu/alonzo-testnet/node-bft1/node.sock:/ipc-node/node.sock
+      - /tmp:/tmp
+      - ipc-config:/ipc-config
+      - db-sync-data:/data
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+        
+volumes:
+  db-sync-data:
+  ipc-config:
+  postgres-data:
+  toolkit-data:
+
