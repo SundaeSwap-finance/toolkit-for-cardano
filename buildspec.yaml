@@ -55,6 +55,30 @@ phases:
           AWS_REGION=${DEV_REGION} \
           aws s3 cp version.json s3://${S3_BUCKET}/${S3_KEY}/version.json
 
+      - |
+        SYNC_IMAGE="sundaeswap/cardano-db-sync:${VERSION}"
+        SYNC_LATEST="sundaeswap/cardano-db-sync:latest"
+
+        echo docker build -t "${IMAGE}" cardano-db-sync
+        docker build -t "${SYNC_IMAGE}" cardano-db-sync
+        docker push "${SYNC_IMAGE}"
+
+        echo docker tag "${SYNC_IMAGE}" "${SYNC_LATEST}"
+        docker tag "${SYNC_IMAGE}" "${SYNC_LATEST}"
+        docker push "${SYNC_LATEST}"
+
+      - |
+        CONFIGURE_IMAGE="sundaeswap/cardano-db-sync-configure:${VERSION}"
+        CONFIGURE_LATEST="sundaeswap/cardano-db-sync-configure:latest"
+
+        echo docker build -t "${IMAGE}" cardano-db-sync
+        docker build -t "${CONFIGURE_IMAGE}" cardano-db-sync
+        docker push "${CONFIGURE_IMAGE}"
+
+        echo docker tag "${CONFIGURE_IMAGE}" "${CONFIGURE_LATEST}"
+        docker tag "${CONFIGURE_IMAGE}" "${CONFIGURE_LATEST}"
+        docker push "${CONFIGURE_LATEST}"
+
 
 cache:
   paths:
