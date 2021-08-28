@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/gql"
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/gql/graphiql"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/gql"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/gql/graphiql"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/savaki/zapctx"
@@ -48,7 +48,7 @@ var opts struct {
 
 func main() {
 	app := cli.NewApp()
-	app.Usage = "launch cardano-toolkit server"
+	app.Usage = "launch toolkit-for-cardano server"
 	app.Version = strings.TrimSpace(version)
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
@@ -127,11 +127,11 @@ func main() {
 func action(_ *cli.Context) error {
 	dir, err := filepath.Abs(opts.Dir)
 	if err != nil {
-		return fmt.Errorf("failed to start cardano-toolkit: %w", err)
+		return fmt.Errorf("failed to start toolkit-for-cardano: %w", err)
 	}
 
 	if err := os.MkdirAll(filepath.Join(dir, "tmp"), 0755); err != nil {
-		return fmt.Errorf("failed to start cardano-toolkit: failed to create tmp dir: %w", err)
+		return fmt.Errorf("failed to start toolkit-for-cardano: failed to create tmp dir: %w", err)
 	}
 
 	// allow the treasury addr to be either provided or read from file
@@ -139,7 +139,7 @@ func action(_ *cli.Context) error {
 	if addr == "" {
 		data, err := ioutil.ReadFile(opts.Cardano.TreasuryAddrFile)
 		if err != nil {
-			return fmt.Errorf("failed to start cardano-toolkit: unable to read treasury-addr-file: %w", err)
+			return fmt.Errorf("failed to start toolkit-for-cardano: unable to read treasury-addr-file: %w", err)
 		}
 		addr = strings.TrimSpace(string(data))
 	}

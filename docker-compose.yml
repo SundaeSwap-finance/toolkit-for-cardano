@@ -21,8 +21,8 @@ services:
         max-size: "200k"
         max-file: "10"
         
-  cardano-toolkit:
-    image: sundaeswap/cardano-toolkit:latest
+  toolkit-for-cardano:
+    image: sundaeswap/toolkit-for-cardano:latest
     environment:
       - CARDANO_NODE_SOCKET_PATH=/ipc-node/node.sock
       - DATA_DIR=/data

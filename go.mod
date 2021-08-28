@@ -1,4 +1,4 @@
-module github.com/SundaeSwap-finance/cardano-toolkit
+module github.com/SundaeSwap-finance/toolkit-for-cardano
 
 go 1.16
 

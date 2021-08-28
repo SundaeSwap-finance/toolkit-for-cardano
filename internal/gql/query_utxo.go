@@ -25,7 +25,7 @@ package gql
 import (
 	"strings"
 
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 )
 
 type UtxosArgs struct {

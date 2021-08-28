@@ -9,7 +9,7 @@ export const Footer = () => {
         <A href="https://sundaeswap.finance" target="_blank">Scoops by SundaeSwap</A>
       </p>
       <p>
-        <A href="https://github.com/SundaeSwap-finance/cardano-toolkit" target="_blank">Github Repo</A>
+        <A href="https://github.com/SundaeSwap-finance/toolkit-for-cardano" target="_blank">Github Repo</A>
       </p>
     </StyledFooter>
   );

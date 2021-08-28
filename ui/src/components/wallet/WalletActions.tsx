@@ -28,7 +28,7 @@ export const WalletActions = () => {
     return (
       <StyledWalletIntro>
         <h2>Connect a wallet to begin!</h2>
-        <p>The <A href="https://github.com/SundaeSwap-finance/cardano-toolkit" target="_blank">cardano-toolkit</A> simplifies the development of Cardano smart contracts by providing teams with frequently needed tasks.</p>
+        <p>The <A href="https://github.com/SundaeSwap-finance/toolkit-for-cardano" target="_blank">toolkit-for-cardano</A> simplifies the development of Cardano smart contracts by providing teams with frequently needed tasks.</p>
         <p>This UI demonstrates a handful of graphql queries and can be a tool in your development process!</p>
       </StyledWalletIntro>
     )

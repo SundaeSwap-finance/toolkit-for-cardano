@@ -28,7 +28,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 )

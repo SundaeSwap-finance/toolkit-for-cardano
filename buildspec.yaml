@@ -32,8 +32,8 @@ phases:
       - go test ./...
       - |
         VERSION="0.${CODEBUILD_BUILD_NUMBER:=0}.$(echo "${CODEBUILD_RESOLVED_SOURCE_VERSION:=$(date +%Y%m%d%H%M%S)}" | cut -c1-7)"
-        IMAGE="sundaeswap/cardano-toolkit:${VERSION}"
-        LATEST="sundaeswap/cardano-toolkit:latest"
+        IMAGE="sundaeswap/toolkit-for-cardano:${VERSION}"
+        LATEST="sundaeswap/toolkit-for-cardano:latest"
 
         echo "logging in to docker hub"
         docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"

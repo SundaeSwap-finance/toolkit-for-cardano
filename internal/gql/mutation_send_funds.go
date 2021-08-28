@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 )
 
 type SendFundArgs struct {

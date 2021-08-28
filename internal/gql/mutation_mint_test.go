@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 	"github.com/segmentio/ksuid"
 	"github.com/tj/assert"
 )

@@ -23,7 +23,7 @@
 package gql
 
 import (
-	"github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+	"github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 )
 
 type VersionResolver struct {

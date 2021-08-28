@@ -5,7 +5,7 @@
 *.iws
 
 # ignore generated
-cardano-toolkit
+toolkit-for-cardano
 
 # ui
 .cache

@@ -22,7 +22,7 @@
 
 package gql
 
-import "github.com/SundaeSwap-finance/cardano-toolkit/internal/cardano"
+import "github.com/SundaeSwap-finance/toolkit-for-cardano/internal/cardano"
 
 type TokenResolver struct {
 	token cardano.Token
