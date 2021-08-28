@@ -10,8 +10,13 @@ export const WalletActions = () => {
   // ADA Faucet Helpers
   const [fundQuantity, setFundQuantity] = useState<string>("");
   const fundHandler = () => {
-    fundWallet(fundQuantity);
-    setFundQuantity("");
+    try {
+      const quantity = (parseFloat(fundQuantity) * 1000000.0).toString()
+      fundWallet(quantity);
+      setFundQuantity("");
+    } catch( e ) {
+      console.log(`failed to fund wallet: ${e}`)
+    }
   }
   // Asset Minting Helpers
   const [mintAssetQuantity, setMintAssetQuantity] = useState<string>("");
