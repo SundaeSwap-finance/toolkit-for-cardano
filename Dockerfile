@@ -16,7 +16,7 @@ RUN yarn install && \
   yarn local:build
 
 
-FROM inputoutput/cardano-node:1.29.0-rc3
+FROM inputoutput/cardano-node:1.29.0
 
 EXPOSE 3200
 
