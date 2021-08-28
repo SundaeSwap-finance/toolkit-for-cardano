@@ -4,6 +4,7 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -40,6 +41,7 @@ var opts struct {
 		SocketPath       string          // SocketPath holds ${CARDANO_NODE_SOCKET_PATH}
 		TestnetMagic     string          // TestnetMagic
 		TreasuryAddr     string          // TreasuryAddr is the address of the treasury wallet
+		TreasuryAddrFile string          // TreasuryAddrFile is a file that holds the address of the treasury wallet
 		TreasurySkeyFile string          // TreasurySkeyFile is a pointer to the skey file for the treasury wallet
 	}
 }
@@ -99,8 +101,13 @@ func main() {
 			Name:        "treasury-addr",
 			Usage:       "address with lovelace to fund other addresses from",
 			EnvVars:     []string{"TREASURY_ADDR"},
-			Required:    true,
 			Destination: &opts.Cardano.TreasuryAddr,
+		},
+		&cli.StringFlag{
+			Name:        "treasury-addr-file",
+			Usage:       "load the treasury address from the specified file",
+			EnvVars:     []string{"TREASURY_ADDR_FILE"},
+			Destination: &opts.Cardano.TreasuryAddrFile,
 		},
 		&cli.StringFlag{
 			Name:        "treasury-skey-file",
@@ -127,12 +134,22 @@ func action(_ *cli.Context) error {
 		return fmt.Errorf("failed to start cardano-toolkit: failed to create tmp dir: %w", err)
 	}
 
+	// allow the treasury addr to be either provided or read from file
+	addr := opts.Cardano.TreasuryAddr
+	if addr == "" {
+		data, err := ioutil.ReadFile(opts.Cardano.TreasuryAddrFile)
+		if err != nil {
+			return fmt.Errorf("failed to start cardano-toolkit: unable to read treasury-addr-file: %w", err)
+		}
+		addr = strings.TrimSpace(string(data))
+	}
+
 	cardanoCLI := cardano.CLI{
 		Cmd:              opts.Cardano.CLI.Value(),
 		Dir:              dir,
 		SocketPath:       opts.Cardano.SocketPath,
 		TestnetMagic:     opts.Cardano.TestnetMagic,
-		TreasuryAddr:     opts.Cardano.TreasuryAddr,
+		TreasuryAddr:     addr,
 		TreasurySkeyFile: opts.Cardano.TreasurySkeyFile,
 		Debug:            opts.Debug,
 	}
