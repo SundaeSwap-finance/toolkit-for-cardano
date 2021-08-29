@@ -68,6 +68,7 @@ export const useWallet = create<TUseWalletStore>((set, get) => ({
     } catch ( e ) {
       console.error(`failed to fund wallet: ${e}`);
       toast.error(`Failed funding wallet ${Number(quantity) / 1_000_000} ADA`, toastConfig);
+      throw e;
     }
   },
   mintAsset: async (name, quantity) => {
@@ -83,6 +84,7 @@ export const useWallet = create<TUseWalletStore>((set, get) => ({
     } catch ( e ) {
       console.error(`failed to mint asset: ${e}`);
       toast.error(`Failed minting ${quantity} ${name}`, toastConfig);
+      throw e;
     }
   },
   refreshUtxos: () => {
