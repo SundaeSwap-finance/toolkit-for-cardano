@@ -1,6 +1,6 @@
 import { TTip, TUtxo } from "./types";
 
-const API_URL = "/graphql";
+const TOOLKIT_GRAPHQL_ENDPOINT = "/graphql";
 
 const gql = (
   query: string,
@@ -15,7 +15,7 @@ const gql = (
     console.log(JSON.stringify(variables, null, 2));
   }
   // Make request
-  return fetch(API_URL, {
+  return fetch(TOOLKIT_GRAPHQL_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables }),
