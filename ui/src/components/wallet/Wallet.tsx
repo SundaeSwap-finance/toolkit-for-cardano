@@ -135,6 +135,8 @@ export const StyledWallet = styled.div`
   height: 520px;
   width: 420px;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-liq-card);
