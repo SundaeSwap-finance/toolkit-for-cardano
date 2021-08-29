@@ -7,60 +7,19 @@ import Input from "../styled/Input";
 import Select from "../styled/Select";
 import { gqlWallets } from "../queries";
 
-export const Wallet = () => {
-  // Get wallet/actions context
+const WalletConnected: React.FC = () => {
   const {
-    isWalletConnected,
     walletAddress,
-    connectWallet,
     disconnectWallet,
-    refreshUtxos,
     walletBalanceADA,
     walletBalanceAssets,
     walletUtxos,
   } = useWallet();
-  // Continually refresh utxos (on mount/connection also fetch)
-  useEffect(() => {
-    if (isWalletConnected) refreshUtxos();
-  }, [isWalletConnected]);
-  useInterval(() => { refreshUtxos(); }, 4000);
-  // Section
   const [walletSection, setWalletSection] = useState<"balance" | "utxos">("balance");
   const [walletTokenFilter, setWalletTokenFilter] = useState("");
-  // Save wallet string being typed in, to be created
-  const [newWalletAddress, setNewWalletAddress] = useState("");
-  // Get wallet options for user (refresh on wallet creations/disconnections)
-  const [walletOptions, setWalletOptions] = useState<string[]>([]);
-  useEffect(() => { gqlWallets().then(setWalletOptions); }, [isWalletConnected]);
-
-  // Render
-  // --- Not connected
-  if (!isWalletConnected) {
-    return (
-      <StyledWallet>
-        <div className="wallet__disconnected">
-          <div className="create">
-            <small>Create a new wallet!</small>
-            <Input value={walletAddress} placeholder="-- wallet address --" onChange={(e) => setNewWalletAddress(e.target.value)} />
-            <Button size="xs" onClick={() => connectWallet(newWalletAddress, false)}>
-              Create New Wallet
-            </Button>
-          </div>
-          <div className="connect">
-            <small>Connect to an existing wallet!</small>
-            <Select onChange={(e) => connectWallet(e.target.value, true)}>
-              <option>---</option>
-              {walletOptions.sort().map((wallet) => <option key={wallet} value={wallet}>{wallet}</option>)}
-            </Select>
-          </div>
-        </div>
-      </StyledWallet>
-    );
-  }
-
-  // --- Connected
+  // RENDER
   return (
-    <StyledWallet>
+    <>
       <div className="wallet__header">
         <header>
           <div>
@@ -126,6 +85,50 @@ export const Wallet = () => {
           </>
         )}
       </div>
+    </>
+  )
+}
+
+const WalletDisconnected: React.FC = () => {
+  const { connectWallet, isWalletConnected, walletAddress } = useWallet();
+  const [newWalletAddress, setNewWalletAddress] = useState("");
+  // --- Get/refresh existing wallets for user select
+  const [walletOptions, setWalletOptions] = useState<string[]>([]);
+  useEffect(() => { gqlWallets().then(setWalletOptions); }, [isWalletConnected]);
+  // RENDER
+  return (
+    <>
+      <div className="wallet__disconnected">
+        <div className="create">
+          <small>Create a new wallet!</small>
+          <Input value={walletAddress} placeholder="-- wallet address --" onChange={(e) => setNewWalletAddress(e.target.value)} />
+          <Button size="xs" onClick={() => connectWallet(newWalletAddress, false)}>
+            Create New Wallet
+          </Button>
+        </div>
+        <div className="connect">
+          <small>Connect to an existing wallet!</small>
+          <Select onChange={(e) => connectWallet(e.target.value, true)}>
+            <option>---</option>
+            {walletOptions.sort().map((wallet) => <option key={wallet} value={wallet}>{wallet}</option>)}
+          </Select>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export const Wallet: React.FC = () => {
+  const { isWalletConnected, refreshUtxos } = useWallet();
+  // Continually refresh utxos (on mount/connection also fetch)
+  useEffect(() => {
+    if (isWalletConnected) refreshUtxos();
+  }, [isWalletConnected]);
+  useInterval(() => { refreshUtxos(); }, 4000);
+  // RENDER
+  return (
+    <StyledWallet>
+      {isWalletConnected ? <WalletConnected /> : <WalletDisconnected />}
     </StyledWallet>
   );
 };
