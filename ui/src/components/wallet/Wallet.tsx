@@ -7,60 +7,19 @@ import Input from "../styled/Input";
 import Select from "../styled/Select";
 import { gqlWallets } from "../queries";
 
-export const Wallet = () => {
-  // Get wallet/actions context
+const WalletConnected: React.FC = () => {
   const {
-    isWalletConnected,
     walletAddress,
-    connectWallet,
     disconnectWallet,
-    refreshUtxos,
     walletBalanceADA,
     walletBalanceAssets,
     walletUtxos,
   } = useWallet();
-  // Continually refresh utxos (on mount/connection also fetch)
-  useEffect(() => {
-    if (isWalletConnected) refreshUtxos();
-  }, [isWalletConnected]);
-  useInterval(() => { refreshUtxos(); }, 4000);
-  // Section
   const [walletSection, setWalletSection] = useState<"balance" | "utxos">("balance");
   const [walletTokenFilter, setWalletTokenFilter] = useState("");
-  // Save wallet string being typed in, to be created
-  const [newWalletAddress, setNewWalletAddress] = useState("");
-  // Get wallet options for user (refresh on wallet creations/disconnections)
-  const [walletOptions, setWalletOptions] = useState<string[]>([]);
-  useEffect(() => { gqlWallets().then(setWalletOptions); }, [isWalletConnected]);
-
-  // Render
-  // --- Not connected
-  if (!isWalletConnected) {
-    return (
-      <StyledWallet>
-        <div className="wallet__disconnected">
-          <div className="create">
-            <small>Create a new wallet!</small>
-            <Input value={walletAddress} placeholder="-- wallet address --" onChange={(e) => setNewWalletAddress(e.target.value)} />
-            <Button size="xs" onClick={() => connectWallet(newWalletAddress, false)}>
-              Create New Wallet
-            </Button>
-          </div>
-          <div className="connect">
-            <small>Connect to an existing wallet!</small>
-            <Select onChange={(e) => connectWallet(e.target.value, true)}>
-              <option>---</option>
-              {walletOptions.sort().map((wallet) => <option key={wallet} value={wallet}>{wallet}</option>)}
-            </Select>
-          </div>
-        </div>
-      </StyledWallet>
-    );
-  }
-
-  // --- Connected
+  // RENDER
   return (
-    <StyledWallet>
+    <>
       <div className="wallet__header">
         <header>
           <div>
@@ -126,6 +85,50 @@ export const Wallet = () => {
           </>
         )}
       </div>
+    </>
+  )
+}
+
+const WalletDisconnected: React.FC = () => {
+  const { connectWallet, isWalletConnected, walletAddress } = useWallet();
+  const [newWalletAddress, setNewWalletAddress] = useState("");
+  // --- Get/refresh existing wallets for user select
+  const [walletOptions, setWalletOptions] = useState<string[]>([]);
+  useEffect(() => { gqlWallets().then(setWalletOptions); }, [isWalletConnected]);
+  // RENDER
+  return (
+    <>
+      <div className="wallet__disconnected">
+        <div className="create">
+          <small>Create a new wallet!</small>
+          <Input value={walletAddress} placeholder="-- wallet address --" onChange={(e) => setNewWalletAddress(e.target.value)} />
+          <Button size="xs" onClick={() => connectWallet(newWalletAddress, false)}>
+            Create New Wallet
+          </Button>
+        </div>
+        <div className="connect">
+          <small>Connect to an existing wallet!</small>
+          <Select onChange={(e) => connectWallet(e.target.value, true)}>
+            <option>---</option>
+            {walletOptions.sort().map((wallet) => <option key={wallet} value={wallet}>{wallet}</option>)}
+          </Select>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export const Wallet: React.FC = () => {
+  const { isWalletConnected, refreshUtxos } = useWallet();
+  // Continually refresh utxos (on mount/connection also fetch)
+  useEffect(() => {
+    if (isWalletConnected) refreshUtxos();
+  }, [isWalletConnected]);
+  useInterval(() => { refreshUtxos(); }, 4000);
+  // RENDER
+  return (
+    <StyledWallet>
+      {isWalletConnected ? <WalletConnected /> : <WalletDisconnected />}
     </StyledWallet>
   );
 };
@@ -135,6 +138,8 @@ export const StyledWallet = styled.div`
   height: 520px;
   width: 420px;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-liq-card);
@@ -216,6 +221,7 @@ export const StyledWallet = styled.div`
   .wallet__body {
     height: 100%;
     overflow-y: scroll;
+    overflow-x: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -241,11 +247,12 @@ export const StyledWallet = styled.div`
     padding: 18px 18px;
     border-bottom: 1px solid var(--main-bg);
     & > div:first-of-type {
-      max-width: 50%;
+      max-width: 70%;
       padding-top: 4px;
       p {
         margin: 0;
         color: var(--text-primary);
+        word-break: break-all;
       }
     }
     & > div:last-of-type {
@@ -265,6 +272,7 @@ export const StyledWallet = styled.div`
   .wallet__utxos {
     height: auto;
     background: var(--swapbox-bg);
+    overflow-x: hidden;
   }
   .wallet__utxos__filter {
     width: 100%;

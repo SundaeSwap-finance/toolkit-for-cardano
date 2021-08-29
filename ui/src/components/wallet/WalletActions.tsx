@@ -9,20 +9,18 @@ export const WalletActions = () => {
   const { fundWallet, isWalletConnected, mintAsset } = useWallet();
   // ADA Faucet Helpers
   const [fundQuantity, setFundQuantity] = useState<string>("");
-  const fundHandler = () => {
-    try {
-      const quantity = (parseFloat(fundQuantity) * 1000000.0).toString()
-      fundWallet(quantity);
-      setFundQuantity("");
-    } catch( e ) {
-      console.log(`failed to fund wallet: ${e}`)
-    }
+  const fundHandler = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    const quantity = (parseFloat(fundQuantity) * 1000000.0).toString()
+    await fundWallet(quantity);
+    setFundQuantity("");
   }
   // Asset Minting Helpers
   const [mintAssetQuantity, setMintAssetQuantity] = useState<string>("");
   const [mintAssetName, setMintAssetName] = useState<string>("");
-  const mintAssetHandler = () => {
-    mintAsset(mintAssetName, mintAssetQuantity);
+  const mintAssetHandler = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    await mintAsset(mintAssetName, mintAssetQuantity);
     setMintAssetQuantity("");
     setMintAssetName("");
   }
@@ -45,20 +43,20 @@ export const WalletActions = () => {
         <div className="wallet__action__header">
           <small>ADA Faucet</small>
         </div>
-        <div className="wallet__action__body">
-          <Input type="text" placeholder="0.0" value={fundQuantity} onChange={(e) => setFundQuantity(e.target.value)} />
-          <Button size="xs" onClick={fundHandler}>Deposit ADA</Button>
-        </div>
+        <form className="wallet__action__body" onSubmit={fundHandler}>
+          <Input type="number" placeholder="0.0" value={fundQuantity} onChange={(e) => setFundQuantity(e.target.value)} />
+          <Button type="submit" size="xs">Deposit ADA</Button>
+        </form>
       </StyledWalletAction>
       <StyledWalletAction>
         <div className="wallet__action__header">
           <small>Mint Asset Name/Amount</small>
         </div>
-        <div className="wallet__action__body">
+        <form className="wallet__action__body" onSubmit={mintAssetHandler}>
           <Input type="text" placeholder="---" value={mintAssetName} onChange={(e) => setMintAssetName(e.target.value)} />
-          <Input type="text" placeholder="0.0" value={mintAssetQuantity} onChange={(e) => setMintAssetQuantity(e.target.value)} />
-          <Button size="xs" onClick={mintAssetHandler}>Mint Asset</Button>
-        </div>
+          <Input type="number" placeholder="0.0" value={mintAssetQuantity} onChange={(e) => setMintAssetQuantity(e.target.value)} />
+          <Button type="submit" size="xs">Mint Asset</Button>
+        </form>
       </StyledWalletAction>
     </StyledWalletActions>
   );
