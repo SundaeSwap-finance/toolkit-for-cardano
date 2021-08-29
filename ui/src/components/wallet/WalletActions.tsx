@@ -46,7 +46,7 @@ export const WalletActions = () => {
           <small>ADA Faucet</small>
         </div>
         <div className="wallet__action__body">
-          <Input type="text" placeholder="0.0" value={fundQuantity} onChange={(e) => setFundQuantity(e.target.value)} />
+          <Input type="number" placeholder="0.0" value={fundQuantity} onChange={(e) => setFundQuantity(e.target.value)} />
           <Button size="xs" onClick={fundHandler}>Deposit ADA</Button>
         </div>
       </StyledWalletAction>
@@ -56,7 +56,7 @@ export const WalletActions = () => {
         </div>
         <div className="wallet__action__body">
           <Input type="text" placeholder="---" value={mintAssetName} onChange={(e) => setMintAssetName(e.target.value)} />
-          <Input type="text" placeholder="0.0" value={mintAssetQuantity} onChange={(e) => setMintAssetQuantity(e.target.value)} />
+          <Input type="number" placeholder="0.0" value={mintAssetQuantity} onChange={(e) => setMintAssetQuantity(e.target.value)} />
           <Button size="xs" onClick={mintAssetHandler}>Mint Asset</Button>
         </div>
       </StyledWalletAction>
