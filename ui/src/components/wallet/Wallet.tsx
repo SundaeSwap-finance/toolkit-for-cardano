@@ -216,6 +216,7 @@ export const StyledWallet = styled.div`
   .wallet__body {
     height: 100%;
     overflow-y: scroll;
+    overflow-x: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -241,11 +242,12 @@ export const StyledWallet = styled.div`
     padding: 18px 18px;
     border-bottom: 1px solid var(--main-bg);
     & > div:first-of-type {
-      max-width: 50%;
+      max-width: 70%;
       padding-top: 4px;
       p {
         margin: 0;
         color: var(--text-primary);
+        word-break: break-all;
       }
     }
     & > div:last-of-type {
@@ -265,6 +267,7 @@ export const StyledWallet = styled.div`
   .wallet__utxos {
     height: auto;
     background: var(--swapbox-bg);
+    overflow-x: hidden;
   }
   .wallet__utxos__filter {
     width: 100%;
