@@ -1,6 +1,8 @@
 import { gqlGetUtxos, gqlMintAsset, gqlWalletCreate, gqlWalletFund } from "../queries";
 import create from "zustand";
-import { TUtxo } from "components/types";
+import { TUtxo } from "../types";
+import toast from "react-hot-toast";
+import { toastConfig } from "../notifications/toastConfig";
 
 const LOCAL_STORAGE_KEY_WALLET = "cardanoToolkit:walletAddress";
 
@@ -54,17 +56,34 @@ export const useWallet = create<TUseWalletStore>((set, get) => ({
     localStorage.removeItem(LOCAL_STORAGE_KEY_WALLET);
   },
   // ACTIONS
-  fundWallet: (quantity) => {
-    if (!get().walletAddress) {
-      return console.error("No connected wallet");
+  fundWallet: async (quantity) => {
+    try {
+      // --- Validate
+      if (!get().walletAddress) throw new Error ("No connected wallet");
+      if (!quantity) throw new Error("Missing ADA quantity");
+      if (Number(quantity) <= 0) throw new Error("ADA quantity can't be negative");
+      // --- gQL
+      await gqlWalletFund(get().walletAddress!, quantity);
+      toast.success(`Funding wallet ${Number(quantity) / 1_000_000} ADA`, toastConfig);
+    } catch ( e ) {
+      console.error(`failed to fund wallet: ${e}`);
+      toast.error(`Failed funding wallet ${Number(quantity) / 1_000_000} ADA`, toastConfig);
     }
-    gqlWalletFund(get().walletAddress!, quantity);
   },
-  mintAsset: (name, quantity) => {
-    if (!get().walletAddress) {
-      return console.error("No connected wallet");
+  mintAsset: async (name, quantity) => {
+    try {
+      // --- Validate
+      if (!get().walletAddress) throw new Error ("No connected wallet");
+      if (!name) throw new Error("Missing asset name");
+      if (!quantity) throw new Error("Missing asset quantity");
+      if (Number(quantity) <= 0) throw new Error("Asset quantity can't be negative");
+      // --- gQL
+      await gqlMintAsset(name, quantity, get().walletAddress!);
+      toast.success(`Minting ${quantity} ${name}`, toastConfig);
+    } catch ( e ) {
+      console.error(`failed to mint asset: ${e}`);
+      toast.error(`Failed minting ${quantity} ${name}`, toastConfig);
     }
-    gqlMintAsset(name, quantity, get().walletAddress!);
   },
   refreshUtxos: () => {
     if (!get().walletAddress) {
