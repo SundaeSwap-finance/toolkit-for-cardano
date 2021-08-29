@@ -18,6 +18,9 @@ by providing teams with frequently needed tasks:
 `toolkit-for-cardano` is not intended as a replacement for a wallet, but rather as a
 development tool to allow teams to make progress with minimal wallet integration overhead.
 
+* Setup Video - https://www.youtube.com/watch?v=wgD6e8d-lOM
+* https://github.com/SundaeSwap-finance/alonzo-testnet
+
 ### Prerequisites
 
 Before launching `toolkit-for-cardano`, you'll need to identify an address that will be considered
