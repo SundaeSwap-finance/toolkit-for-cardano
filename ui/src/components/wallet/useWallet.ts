@@ -44,7 +44,13 @@ export const useWallet = create<TUseWalletStore>((set, get) => ({
       });
   },
   disconnectWallet: () => {
-    set({ isWalletConnected: false, walletAddress: undefined })
+    set({
+      isWalletConnected: false,
+      walletAddress: undefined,
+      walletBalanceADA: undefined,
+      walletBalanceAssets: {},
+      walletUtxos: [],
+    });
     localStorage.removeItem(LOCAL_STORAGE_KEY_WALLET);
   },
   // ACTIONS
