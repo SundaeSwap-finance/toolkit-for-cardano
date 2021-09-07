@@ -46,7 +46,7 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds, name string) (walle
 	defer func(begin time.Time) {
 		zapctx.FromContext(ctx).Info("created wallet",
 			zap.String("name", name),
-			zap.Duration("elapsed", time.Now().Sub(begin).Round(time.Millisecond)),
+			zap.Duration("elapsed", time.Since(begin).Round(time.Millisecond)),
 			zap.Error(err),
 		)
 	}(time.Now())
@@ -151,7 +151,7 @@ func (c CLI) FundWallet(ctx context.Context, address, quantity string) (tx Tx, e
 		zapctx.FromContext(ctx).Info("funded wallet",
 			zap.String("address", address),
 			zap.String("quantity", quantity),
-			zap.Duration("elapsed", time.Now().Sub(begin).Round(time.Millisecond)),
+			zap.Duration("elapsed", time.Since(begin).Round(time.Millisecond)),
 			zap.Error(err),
 		)
 	}(time.Now())
@@ -191,4 +191,41 @@ func (c CLI) FundWallet(ctx context.Context, address, quantity string) (tx Tx, e
 	}
 
 	return Tx{}, fmt.Errorf("unable to fund wallet: insufficient funds in treasury addr, %v", c.TreasuryAddr)
+}
+
+func (c CLI) RegisterStake(ctx context.Context, address string) (tx Tx, err error) {
+	defer func(begin time.Time) {
+		zapctx.FromContext(ctx).Info("registered stake address",
+			zap.String("address", address),
+			zap.Duration("elapsed", time.Since(begin).Round(time.Millisecond)),
+			zap.Error(err),
+		)
+	}(time.Now())
+	address, err = c.NormalizeAddress(address)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	tx, err = c.FundWallet(ctx, address, "10000")
+	if err != nil {
+		return Tx{}, fmt.Errorf("failed to fund wallet: %w", err)
+	}
+	// TODO
+	return Tx{}, nil
+}
+
+func (c CLI) Delegate(ctx context.Context, address string) (tx Tx, err error) {
+	defer func(begin time.Time) {
+		zapctx.FromContext(ctx).Info("delegated stake",
+			zap.String("address", address),
+			zap.Duration("elapsed", time.Since(begin).Round(time.Millisecond)),
+			zap.Error(err),
+		)
+	}(time.Now())
+	address, err = c.NormalizeAddress(address)
+	if err != nil {
+		return Tx{}, err
+	}
+	// TODO
+	return Tx{}, nil
 }

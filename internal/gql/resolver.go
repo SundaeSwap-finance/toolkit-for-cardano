@@ -39,6 +39,8 @@ var textSchema string
 type Cardano interface {
 	Build(opts ...cardano.BuildOption) ([]byte, error)
 	CreateWallet(ctx context.Context, initialFunds, name string) (wallet string, err error)
+	RegisterStake(ctx context.Context, address string) (tx cardano.Tx, err error)
+	Delegate(ctx context.Context, address string) (tx cardano.Tx, err error)
 	DataDir() string
 	FindAllWallets(query string) ([]string, error)
 	FundWallet(ctx context.Context, address, quantity string) (tx cardano.Tx, err error)
