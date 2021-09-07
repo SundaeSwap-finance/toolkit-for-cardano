@@ -226,10 +226,30 @@ func (c CLI) RegisterStake(ctx context.Context, address string) (tx Tx, err erro
 	}
 
 	// Fund the wallet with enough ADA to cover fees and registration deposit
-	amt := big.NewInt(10000 * 1e6)
-	tx, err = c.FundWallet(ctx, address, amt.String())
+	amt := big.NewInt(5 * 1e6)
+	utxos, err := c.Utxos(
+		address,
+		AtLeast(int32(amt.Int64())), // bounds checking?
+		ExcludeScripts(true),
+		ExcludeTokens(true),
+	)
 	if err != nil {
-		return Tx{}, fmt.Errorf("failed to fund wallet: %w", err)
+		return Tx{}, err
+	}
+	utxo := Utxo{}
+	if len(utxos) < 1 {
+		tx, err = c.FundWallet(ctx, address, amt.String())
+		if err != nil {
+			return Tx{}, fmt.Errorf("failed to fund wallet: %w", err)
+		}
+		utxo = Utxo{
+			Address: tx.ID,
+			Index:   1,
+			Value:   "2000000",
+		}
+	} else {
+		utxo = utxos[0]
+		amt, _ = big.NewInt(0).SetString(utxo.Value, 10)
 	}
 
 	// Estimate the fee for the tx to register the stake fee
