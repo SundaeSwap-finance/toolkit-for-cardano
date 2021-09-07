@@ -25,6 +25,8 @@ package cardano
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"math/big"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -46,7 +48,7 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds, name string) (walle
 	defer func(begin time.Time) {
 		zapctx.FromContext(ctx).Info("created wallet",
 			zap.String("name", name),
-			zap.Duration("elapsed", time.Since(begin).Round(time.Millisecond)),
+			zap.Duration("elapsed", time.Now().Sub(begin).Round(time.Millisecond)),
 			zap.Error(err),
 		)
 	}(time.Now())
@@ -201,17 +203,77 @@ func (c CLI) RegisterStake(ctx context.Context, address string) (tx Tx, err erro
 			zap.Error(err),
 		)
 	}(time.Now())
+	addressMnemonic := address
+	location := c.WalletLocation(addressMnemonic)
 	address, err = c.NormalizeAddress(address)
 	if err != nil {
 		return Tx{}, err
 	}
 
-	tx, err = c.FundWallet(ctx, address, "10000")
+	// Fund the wallet with enough ADA to cover fees and registration deposit
+	amt := big.NewInt(10000 * 1e6)
+	tx, err = c.FundWallet(ctx, address, amt.String())
 	if err != nil {
 		return Tx{}, fmt.Errorf("failed to fund wallet: %w", err)
 	}
-	// TODO
-	return Tx{}, nil
+
+	// Estimate the fee for the tx to register the stake fee
+	cert := location + "-stake.reg.cert"
+	raw, err := c.Build(
+		TxIn(tx.ID, 1),
+		TxOut(address, amt.String()),
+		Certificate(cert),
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	f, err := ioutil.TempFile(filepath.Join(c.DataDir(), "/tmp"), "script")
+	if err != nil {
+		return Tx{}, err
+	}
+
+	defer os.Remove(f.Name())
+	defer f.Close()
+
+	if _, err := f.Write(raw); err != nil {
+		return Tx{}, err
+	}
+
+	fee, err := c.MinFee(ctx, f.Name(), 1, 1, 2)
+	if err != nil {
+		return Tx{}, err
+	}
+	feeValue, _ := big.NewInt(0).SetString(fee, 10)
+	amt = big.NewInt(0).Sub(amt, feeValue)
+	// Build, Sign, and Submit
+	raw, err = c.Build(
+		TxIn(tx.ID, 1),
+		TxOut(address, amt.String()),
+		Fee(fee),
+		Certificate(cert),
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+	signed, err := c.Sign(
+		ctx,
+		raw,
+		addressMnemonic,
+		addressMnemonic+"-stake",
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+	tx, err = ParseTx(signed)
+	if err != nil {
+		return Tx{}, err
+	}
+	err = c.Submit(ctx, signed)
+	if err != nil {
+		return Tx{}, err
+	}
+	return tx, nil
 }
 
 func (c CLI) Delegate(ctx context.Context, address string) (tx Tx, err error) {

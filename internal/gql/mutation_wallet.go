@@ -33,7 +33,7 @@ var reValueNotConserved = regexp.MustCompile(`ValueNotConservedUTxO\s*\(Value\s+
 type WalletCreateArgs struct {
 	InitialFunds *string
 	Name         *string
-	Delegation   *string
+	Delegation   string
 }
 
 func (r *Resolver) WalletCreate(ctx context.Context, args WalletCreateArgs) (string, error) {
@@ -46,16 +46,18 @@ func (r *Resolver) WalletCreate(ctx context.Context, args WalletCreateArgs) (str
 	if err != nil {
 		return s, err
 	}
-	if *args.Delegation == "NONE" {
+	if args.Delegation == "NONE" {
 		return s, nil
 	}
+	time.Sleep(3 * time.Second)
 	_, err = r.WalletRegister(ctx, WalletRegisterArgs{Address: StringValue(args.Name)})
 	if err != nil {
 		return s, err
 	}
-	if *args.Delegation == "REGISTERED" {
+	if args.Delegation == "REGISTERED" {
 		return s, nil
 	}
+	time.Sleep(3 * time.Second)
 	_, err = r.WalletDelegate(ctx, WalletDelegateArgs{Address: StringValue(args.Name)})
 	if err != nil {
 		return s, err

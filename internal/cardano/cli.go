@@ -228,13 +228,20 @@ func (c CLI) MinFee(ctx context.Context, filename string, txIn, txOut, witnesses
 	return parts[0], nil
 }
 
+func (c *CLI) WalletLocation(addressMnemonic string) string {
+	addressMnemonic = strings.TrimSpace(addressMnemonic)
+	location := filepath.Join(c.Dir, dirWallets, addressMnemonic)
+	return location
+}
+
 func (c *CLI) NormalizeAddress(address string) (string, error) {
 	if c == nil {
 		return address, nil
 	}
 
 	address = strings.TrimSpace(address)
-	filename := filepath.Join(c.Dir, dirWallets, address+".addr")
+	location := c.WalletLocation(address)
+	filename := location + ".addr"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -58,6 +58,7 @@ type BuildOptions struct {
 	MintScriptFile string
 	TxIn           []txIn
 	TxOut          []txOut
+	Certificates   []string
 }
 
 func MakeBuildOptions(opts ...BuildOption) BuildOptions {
@@ -111,6 +112,12 @@ func TxOut(address string, quantity string, tokens ...string) BuildOption {
 	}
 }
 
+func Certificate(files ...string) BuildOption {
+	return func(options *BuildOptions) {
+		options.Certificates = append(options.Certificates, files...)
+	}
+}
+
 func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 	filename := filepath.Join(c.Dir, "tmp", ksuid.New().String())
 	if !c.Debug {
@@ -145,6 +152,9 @@ func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 	}
 	if options.MintScriptFile != "" {
 		args = append(args, "--mint-script-file="+options.MintScriptFile)
+	}
+	for _, in := range options.Certificates {
+		args = append(args, "--certificate-file="+in)
 	}
 
 	fmt.Println()
