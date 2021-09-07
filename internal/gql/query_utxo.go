@@ -43,8 +43,8 @@ func (r *Resolver) Utxos(args UtxosArgs) ([]*UtxoResolver, error) {
 
 	utxos, err := r.config.CLI.Utxos(address,
 		onlyAssetId(args.AssetId),
-		excludeScripts(boolValue(args.ExcludeScripts)),
-		excludeTokens(boolValue(args.ExcludeTokens)),
+		cardano.ExcludeScripts(boolValue(args.ExcludeScripts)),
+		cardano.ExcludeTokens(boolValue(args.ExcludeTokens)),
 	)
 	if err != nil {
 		return nil, err

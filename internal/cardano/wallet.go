@@ -139,6 +139,21 @@ func (c CLI) CreateWallet(ctx context.Context, initialFunds, name string) (walle
 		return "", fmt.Errorf("failed to create wallet: failed to create stake address registration cert: %w", err)
 	}
 
+	// Stake delegation certs
+	// cardano-cli stake-address delegation-certificate \
+	// --stake-verification-key-file addresses/${ADDR}-stake.vkey
+	// --cold-verification-key-file shelley/operator.vkey
+	// --out-file addresses/${ADDR}-stake.delegate.cert
+	_, err = c.exec(
+		"stake-address", "delegation-certificate",
+		"--stake-verification-key-file", fmt.Sprintf("%v/%v-stake.vkey", dirWallets, name),
+		"--cold-verification-key-file", fmt.Sprintf("%v/shelley/operator.vkey", c.PoolDir),
+		"--out-file", fmt.Sprintf("%v/%v-stake.delegate.cert", dirWallets, name),
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to create wallet: failed to create stake address delegation cert: %w", err)
+	}
+
 	if _, err := c.FundWallet(ctx, name, initialFunds); err != nil {
 		return "", fmt.Errorf("failed to create wallet: %w", err)
 	}
@@ -284,10 +299,95 @@ func (c CLI) Delegate(ctx context.Context, address string) (tx Tx, err error) {
 			zap.Error(err),
 		)
 	}(time.Now())
+	addressMnemonic := address
+	location := c.WalletLocation(addressMnemonic)
 	address, err = c.NormalizeAddress(address)
 	if err != nil {
 		return Tx{}, err
 	}
-	// TODO
-	return Tx{}, nil
+
+	// Find a utxo containing at least 2 ada
+	amt := big.NewInt(2 * 1e6)
+	utxos, err := c.Utxos(
+		address,
+		AtLeast(int32(amt.Int64())), // bounds checking?
+		ExcludeScripts(true),
+		ExcludeTokens(true),
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+	utxo := Utxo{}
+	if len(utxos) < 1 {
+		tx, err = c.FundWallet(ctx, address, amt.String())
+		if err != nil {
+			return Tx{}, fmt.Errorf("failed to fund wallet: %w", err)
+		}
+		utxo = Utxo{
+			Address: tx.ID,
+			Index:   1,
+			Value:   "2000000",
+		}
+	} else {
+		utxo = utxos[0]
+		amt, _ = big.NewInt(0).SetString(utxo.Value, 10)
+	}
+
+	// Estimate the fee for the tx to register the stake fee
+	cert := location + "-stake.delegate.cert"
+	raw, err := c.Build(
+		TxIn(utxo.Address, utxo.Index),
+		TxOut(address, amt.String()),
+		Certificate(cert),
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+
+	f, err := ioutil.TempFile(filepath.Join(c.DataDir(), "/tmp"), "script")
+	if err != nil {
+		return Tx{}, err
+	}
+
+	defer os.Remove(f.Name())
+	defer f.Close()
+
+	if _, err := f.Write(raw); err != nil {
+		return Tx{}, err
+	}
+
+	fee, err := c.MinFee(ctx, f.Name(), 1, 1, 2)
+	if err != nil {
+		return Tx{}, err
+	}
+	feeValue, _ := big.NewInt(0).SetString(fee, 10)
+	amt = big.NewInt(0).Sub(amt, feeValue)
+	// Build, Sign, and Submit
+	raw, err = c.Build(
+		TxIn(utxo.Address, utxo.Index),
+		TxOut(address, amt.String()),
+		Fee(fee),
+		Certificate(cert),
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+	signed, err := c.Sign(
+		ctx,
+		raw,
+		addressMnemonic,
+		addressMnemonic+"-stake",
+	)
+	if err != nil {
+		return Tx{}, err
+	}
+	tx, err = ParseTx(signed)
+	if err != nil {
+		return Tx{}, err
+	}
+	err = c.Submit(ctx, signed)
+	if err != nil {
+		return Tx{}, err
+	}
+	return tx, nil
 }

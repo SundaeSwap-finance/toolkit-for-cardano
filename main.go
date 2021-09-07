@@ -35,6 +35,7 @@ var opts struct {
 	Assets  string // Assets contains optional directory for static assets
 	Debug   bool   // Debug mode for additional logging
 	Dir     string // Dir to store data in
+	PoolDir string // Dir where the pool keys are found
 	Port    int    // Port to listen on
 	Cardano struct {
 		CLI              cli.StringSlice // Cardano cli invocation e.g. cardano-cli or ssh hostname cardano-cli
@@ -75,6 +76,13 @@ func main() {
 			Value:       os.ExpandEnv("data"),
 			EnvVars:     []string{"DATA_DIR"},
 			Destination: &opts.Dir,
+		},
+		&cli.StringFlag{
+			Name:        "pool-dir",
+			Usage:       "path to the node-pool1 directory",
+			EnvVars:     []string{"POOL_DIR"},
+			Required:    true,
+			Destination: &opts.PoolDir,
 		},
 		&cli.IntFlag{
 			Name:        "port",
@@ -129,6 +137,10 @@ func action(_ *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to start toolkit-for-cardano: %w", err)
 	}
+	poolDir, err := filepath.Abs(opts.PoolDir)
+	if err != nil {
+		return fmt.Errorf("failed to start toolkit-for-cardano: %w", err)
+	}
 
 	if err := os.MkdirAll(filepath.Join(dir, "tmp"), 0755); err != nil {
 		return fmt.Errorf("failed to start toolkit-for-cardano: failed to create tmp dir: %w", err)
@@ -147,6 +159,7 @@ func action(_ *cli.Context) error {
 	cardanoCLI := cardano.CLI{
 		Cmd:              opts.Cardano.CLI.Value(),
 		Dir:              dir,
+		PoolDir:          poolDir,
 		SocketPath:       opts.Cardano.SocketPath,
 		TestnetMagic:     opts.Cardano.TestnetMagic,
 		TreasuryAddr:     addr,
