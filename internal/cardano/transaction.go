@@ -326,10 +326,15 @@ func ParseTx(data []byte) (Tx, error) {
 	type Record struct {
 		_     struct{} `cbor:",toarray"`
 		Body  cbor.RawMessage
+		Wit   cbor.RawMessage
 		Junk1 cbor.RawMessage
 		Junk2 cbor.RawMessage
 	}
 	var record Record
+	err = cbor.Unmarshal(data, &record)
+	if err != nil {
+		return Tx{}, fmt.Errorf("failed to get tx id: unable to unmarshal cbor message: %w", err)
+	}
 	h, err := blake2b.New256(nil)
 	if err != nil {
 		return Tx{}, fmt.Errorf("failed to get tx id: unable to create blake2b decoder: %w", err)
