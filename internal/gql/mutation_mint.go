@@ -38,7 +38,7 @@ type MintArgs struct {
 }
 
 func (r *Resolver) Mint(ctx context.Context, args MintArgs) (*Resolver, error) {
-	utxos, err := r.config.CLI.Utxos(args.Wallet, excludeScripts(true), excludeTokens(true))
+	utxos, err := r.config.CLI.Utxos(args.Wallet, cardano.ExcludeScripts(true), cardano.ExcludeTokens(true))
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *Resolver) Mint(ctx context.Context, args MintArgs) (*Resolver, error) {
 			// ok
 		}
 
-		utxos, err = r.config.CLI.Utxos(args.Wallet, excludeScripts(true), excludeTokens(true))
+		utxos, err = r.config.CLI.Utxos(args.Wallet, cardano.ExcludeScripts(true), cardano.ExcludeTokens(true))
 		if err != nil {
 			return nil, err
 		}
@@ -105,22 +105,4 @@ func (r *Resolver) Mint(ctx context.Context, args MintArgs) (*Resolver, error) {
 	}
 
 	return r, nil
-}
-
-func excludeTokens(enabled bool) func(utxo cardano.Utxo) bool {
-	if !enabled {
-		return func(utxo cardano.Utxo) bool { return false }
-	}
-	return func(utxo cardano.Utxo) bool {
-		return len(utxo.Tokens) > 0
-	}
-}
-
-func excludeScripts(enabled bool) func(utxo cardano.Utxo) bool {
-	if !enabled {
-		return func(utxo cardano.Utxo) bool { return false }
-	}
-	return func(utxo cardano.Utxo) bool {
-		return len(utxo.DatumHash) > 0
-	}
 }

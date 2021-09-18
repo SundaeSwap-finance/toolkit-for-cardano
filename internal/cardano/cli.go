@@ -29,6 +29,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -56,6 +57,7 @@ var (
 type CLI struct {
 	Cmd              []string
 	Dir              string
+	PoolDir          string
 	SocketPath       string
 	TestnetMagic     string
 	TreasuryAddr     string
@@ -228,13 +230,20 @@ func (c CLI) MinFee(ctx context.Context, filename string, txIn, txOut, witnesses
 	return parts[0], nil
 }
 
+func (c *CLI) WalletLocation(addressMnemonic string) string {
+	addressMnemonic = strings.TrimSpace(addressMnemonic)
+	location := filepath.Join(c.Dir, dirWallets, addressMnemonic)
+	return location
+}
+
 func (c *CLI) NormalizeAddress(address string) (string, error) {
 	if c == nil {
 		return address, nil
 	}
 
 	address = strings.TrimSpace(address)
-	filename := filepath.Join(c.Dir, dirWallets, address+".addr")
+	location := c.WalletLocation(address)
+	filename := location + ".addr"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -302,6 +311,32 @@ func (c CLI) QueryTip() (*Tip, error) {
 // DataDir returns the path to the directory containing the server data
 func (c CLI) DataDir() string {
 	return c.Dir
+}
+
+func AtLeast(amt int32) func(utxo Utxo) bool {
+	cmp := big.NewInt(int64(amt))
+	return func(utxo Utxo) bool {
+		val, _ := big.NewInt(0).SetString(utxo.Value, 10)
+		return val.Cmp(cmp) >= 0
+	}
+}
+
+func ExcludeTokens(enabled bool) func(utxo Utxo) bool {
+	if !enabled {
+		return func(utxo Utxo) bool { return false }
+	}
+	return func(utxo Utxo) bool {
+		return len(utxo.Tokens) > 0
+	}
+}
+
+func ExcludeScripts(enabled bool) func(utxo Utxo) bool {
+	if !enabled {
+		return func(utxo Utxo) bool { return false }
+	}
+	return func(utxo Utxo) bool {
+		return len(utxo.DatumHash) > 0
+	}
 }
 
 // Utxos retrieves the list of utxos from cardano node.

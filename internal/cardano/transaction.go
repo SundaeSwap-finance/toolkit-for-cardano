@@ -58,6 +58,7 @@ type BuildOptions struct {
 	MintScriptFile string
 	TxIn           []txIn
 	TxOut          []txOut
+	Certificates   []string
 }
 
 func MakeBuildOptions(opts ...BuildOption) BuildOptions {
@@ -111,6 +112,12 @@ func TxOut(address string, quantity string, tokens ...string) BuildOption {
 	}
 }
 
+func Certificate(files ...string) BuildOption {
+	return func(options *BuildOptions) {
+		options.Certificates = append(options.Certificates, files...)
+	}
+}
+
 func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 	filename := filepath.Join(c.Dir, "tmp", ksuid.New().String())
 	if !c.Debug {
@@ -145,6 +152,9 @@ func (c CLI) Build(opts ...BuildOption) ([]byte, error) {
 	}
 	if options.MintScriptFile != "" {
 		args = append(args, "--mint-script-file="+options.MintScriptFile)
+	}
+	for _, in := range options.Certificates {
+		args = append(args, "--certificate-file="+in)
 	}
 
 	fmt.Println()
@@ -323,19 +333,17 @@ func ParseTx(data []byte) (Tx, error) {
 		return Tx{}, fmt.Errorf("failed to decode cbor hex: %w", err)
 	}
 
-	type Record struct {
-		_     struct{} `cbor:",toarray"`
-		Body  cbor.RawMessage
-		Junk1 cbor.RawMessage
-		Junk2 cbor.RawMessage
+	var record []cbor.RawMessage
+	err = cbor.Unmarshal(data, &record)
+	if err != nil {
+		return Tx{}, fmt.Errorf("failed to get tx id: unable to unmarshal cbor message: %w", err)
 	}
-	var record Record
 	h, err := blake2b.New256(nil)
 	if err != nil {
 		return Tx{}, fmt.Errorf("failed to get tx id: unable to create blake2b decoder: %w", err)
 	}
 
-	if _, err := h.Write(record.Body); err != nil {
+	if _, err := h.Write(record[0]); err != nil {
 		return Tx{}, fmt.Errorf("failed to write record body: %w", err)
 	}
 

@@ -52,7 +52,6 @@ func (r *Resolver) buildMintTx(ctx context.Context, input BuildMintTxInput) (raw
 			zap.Error(err),
 		)
 	}(time.Now())
-
 	keyHash, err := r.config.CLI.KeyHash(ctx, input.Wallet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build mint tx: %w", err)

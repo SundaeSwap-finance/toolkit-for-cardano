@@ -20,7 +20,7 @@ type Mock struct {
 
 func (m *Mock) Build(opts ...cardano.BuildOption) ([]byte, error) {
 	m.options = append(m.options, cardano.MakeBuildOptions(opts...))
-	return []byte("{}"), nil
+	return []byte("{\"CborHex\": \"86a60081825820e13395515a10257b5bd279eccd45caa2c9f1a0305c77233010cd4cef86626336010d80018182583900f9aebd07330abcac10bb3b6e8e60961de12d6c5d3b6d464759ce79bb71ee23999a36cbf64a533b8051970109d38b0760278876cd187ce49b1a009896800200048182008200581c71ee23999a36cbf64a533b8051970109d38b0760278876cd187ce49b0e809fff8080f5f6\"}"), nil
 }
 
 func (m Mock) DataDir() string {

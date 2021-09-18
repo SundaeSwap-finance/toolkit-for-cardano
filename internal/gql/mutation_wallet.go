@@ -33,6 +33,7 @@ var reValueNotConserved = regexp.MustCompile(`ValueNotConservedUTxO\s*\(Value\s+
 type WalletCreateArgs struct {
 	InitialFunds *string
 	Name         *string
+	Delegation   string
 }
 
 func (r *Resolver) WalletCreate(ctx context.Context, args WalletCreateArgs) (string, error) {
@@ -41,7 +42,27 @@ func (r *Resolver) WalletCreate(ctx context.Context, args WalletCreateArgs) (str
 		initialFunds = *args.InitialFunds
 	}
 
-	return r.config.CLI.CreateWallet(ctx, initialFunds, StringValue(args.Name))
+	s, err := r.config.CLI.CreateWallet(ctx, initialFunds, StringValue(args.Name))
+	if err != nil {
+		return s, err
+	}
+	if args.Delegation == "NONE" {
+		return s, nil
+	}
+	time.Sleep(3 * time.Second)
+	_, err = r.WalletRegister(ctx, WalletRegisterArgs{Address: StringValue(args.Name)})
+	if err != nil {
+		return s, err
+	}
+	if args.Delegation == "REGISTERED" {
+		return s, nil
+	}
+	time.Sleep(3 * time.Second)
+	_, err = r.WalletDelegate(ctx, WalletDelegateArgs{Address: StringValue(args.Name)})
+	if err != nil {
+		return s, err
+	}
+	return s, nil
 }
 
 type WalletFundArgs struct {
@@ -67,4 +88,22 @@ func (r *Resolver) WalletFund(ctx context.Context, args WalletFundArgs) (*Resolv
 	}
 
 	return r, nil
+}
+
+type WalletRegisterArgs struct {
+	Address string
+}
+
+func (r *Resolver) WalletRegister(ctx context.Context, args WalletRegisterArgs) (*Resolver, error) {
+	_, err := r.config.CLI.RegisterStake(ctx, args.Address)
+	return r, err
+}
+
+type WalletDelegateArgs struct {
+	Address string
+}
+
+func (r *Resolver) WalletDelegate(ctx context.Context, args WalletDelegateArgs) (*Resolver, error) {
+	_, err := r.config.CLI.Delegate(ctx, args.Address)
+	return r, err
 }

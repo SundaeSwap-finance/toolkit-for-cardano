@@ -37,7 +37,7 @@ type SendFundArgs struct {
 }
 
 func (r *Resolver) SendFunds(ctx context.Context, args SendFundArgs) (*Resolver, error) {
-	utxos, err := r.config.CLI.Utxos("", excludeScripts(true))
+	utxos, err := r.config.CLI.Utxos("", cardano.ExcludeScripts(true))
 	if err != nil {
 		return nil, err
 	}

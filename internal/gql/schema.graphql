@@ -50,10 +50,16 @@ type Mutation {
 
   # Creates a new address and optionally funds it with the specified amount of ADA.
   # name: allows for an optional wallet name [a-zA-Z0-9._\- ']
-  walletCreate(initialFunds: String, name: String): String!
+  walletCreate(initialFunds: String, name: String, delegation: String = "NONE"): String!
 
   # Fund the specified address with ADA.  Deposits 1,000 ADA by default (1e3 * 1e6)
   walletFund(address: String!, quantity: String = "1000000000"): Query
+  
+  # Register the wallets stake address
+  walletRegister(address: String!): Query
+  
+  # Delegate to (the only) pool
+  walletDelegate(address: String!): Query
 }
 
 input TxIn {
